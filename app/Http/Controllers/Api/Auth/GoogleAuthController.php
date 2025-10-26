@@ -12,12 +12,8 @@ class GoogleAuthController extends Controller
 {
     public function googleLogin(Request $request)
     {
-        $request->validate([
-            'token' => 'required|string',
-        ]);
-
         try {
-            $googleUser = Socialite::driver('google')->userFromToken($request->token);
+            $googleUser = Socialite::driver('google')->user();
             $user = User::where('email', $googleUser->getEmail())->first();
 
             if (!$user) {
