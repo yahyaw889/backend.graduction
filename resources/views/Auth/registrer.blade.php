@@ -150,10 +150,6 @@
             <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google">
             Google
           </a>
-          <a href="{{ route('facebook.redirect') }}" type="button" class="social-btn">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/facebook/facebook-original.svg" alt="Facebook">
-            Facebook
-          </a>
         </div>
 
         <div class="muted-row" style="margin-top:14px;">

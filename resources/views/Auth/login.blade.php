@@ -124,10 +124,6 @@
           <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo" />
           Google
         </a>
-        <a href="{{ route('facebook.redirect') }}" type="button" class="btn facebook">
-          <img src="https://www.svgrepo.com/show/452196/facebook-1.svg" alt="Facebook Logo" />
-          Facebook
-        </a>
       </div>
 
       <div class="muted-row" style="margin-top:8px">

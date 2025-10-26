@@ -1,8 +1,16 @@
 <?php
 
+use App\Http\Controllers\Api\Auth\AuthSessionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Auth\RegisterController;
+use App\Http\Controllers\Api\Auth\GoogleAuthController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::post('/register', [RegisterController::class, 'register'])->name('register');
+Route::post('/login', [AuthSessionController::class, 'login'])->name('login');
+// Route::post('/auth/google/callback', [GoogleAuthController::class, 'googleLogin'])->name('google.login'); //need more info
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/user', [AuthSessionController::class, 'user'])->name('user');
+    Route::post('/logout', [AuthSessionController::class, 'logout'])->name('logout');
+});

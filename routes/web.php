@@ -4,7 +4,7 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\SessionController;
-use App\Http\Controllers\Auth\FacebookAuthController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -36,13 +36,7 @@ Route::middleware('guest')->group(function () {
         Route::get('/auth/google/callback', 'callback')->name('google.callback');
     });
 
-    //facebook
-    Route::controller(FacebookAuthController::class)->group(function () {
-        //redirect
-        Route::get('/auth/facebook/redirect', 'redirect')->name('facebook.redirect');
-        //callback
-        Route::get('/auth/facebook/callback', 'callback')->name('facebook.callback');
-    });
+    
 });
 
 //auth

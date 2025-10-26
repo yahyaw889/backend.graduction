@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 class GoogleAuthController extends Controller
@@ -25,6 +26,7 @@ class GoogleAuthController extends Controller
             ],
             [
                 'name' => $googleUser->getName(),
+                'password' => Hash::make(uniqid('google_', true)),
                 'email_verified_at' => now(),
             ]
         );
