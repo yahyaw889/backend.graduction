@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\RegisterRequest;
+use Illuminate\Support\Facades\DB;
 
 class RegisterController extends Controller
 {
@@ -16,6 +17,7 @@ class RegisterController extends Controller
         // Validate input
         $validation = $request->validated();
 
+        DB::beginTransaction();
         // Create user
         $user = User::create([
             'name'     => $validation['name'],
@@ -26,6 +28,7 @@ class RegisterController extends Controller
         // Generate token
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        DB::commit();
         return response()->json([
             'status'  => true,
             'message' => 'User registered successfully',
