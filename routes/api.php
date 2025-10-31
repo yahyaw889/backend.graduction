@@ -8,9 +8,9 @@ use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\GoogleAuthController;
 use App\Http\Controllers\ContactUsController;
 
-Route::post('/register', [RegisterController::class, 'register']);
-Route::post('/login', [AuthSessionController::class, 'login']);
-// Route::post('/auth/google/callback', [GoogleAuthController::class, 'googleLogin'])->name('google.login'); //need more info
+Route::post('/register', [RegisterController::class, 'register'])->name('register');
+Route::post('/login', [AuthSessionController::class, 'login'])->name('login');
+Route::post('/auth/google', [GoogleAuthController::class, 'googleAuth'])->name('google.login');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user', [AuthSessionController::class, 'user']);

@@ -4,44 +4,52 @@ namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Google_Client;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
 {
-    public function googleLogin(Request $request)
+    public function googleAuth(Request $request)
     {
-        try {
-            $googleUser = Socialite::driver('google')->user();
-            $user = User::where('email', $googleUser->getEmail())->first();
+        $request->validate([
+            'id_token' => 'required|string',
+        ]);
 
-            if (!$user) {
-                $user = User::create([
-                    'name' => $googleUser->getName(),
-                    'email' => $googleUser->getEmail(),
-                    'password' => Hash::make(uniqid('google_', true)),
-                ]);
+        try {
+            $client = new Google_Client(['client_id' => env('GOOGLE_CLIENT_ID')]);
+            $payload = $client->verifyIdToken($request->id_token);
+
+            if (!$payload) {
+                return response()->json([
+                    'error' => 'Invalid Google token',
+                ], 401);
             }
+
+            $email = $payload['email'];
+            $name = $payload['name'] ?? 'No Name';
+
+            $user = User::firstOrCreate(
+                ['email' => $email],
+                [
+                    'name' => $name,
+                    'password' => bcrypt(str()->random(16)),
+                ]
+            );
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
-                'status'  => true,
-                'message' => 'Google login successful',
-                'user'    => [
-                    'id'    => $user->id,
-                    'name'  => $user->name,
-                    'email' => $user->email,
-                ],
-                'token'   => $token,
+                'message' => 'Login successful',
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+                'user' => $user,
             ]);
+
         } catch (\Exception $e) {
             return response()->json([
-                'status'  => false,
-                'message' => 'Invalid Google token',
-                'error'   => $e->getMessage(),
-            ], 401);
+                'error' => 'Authentication failed',
+                'message' => $e->getMessage(),
+            ], 500);
         }
     }
 }
