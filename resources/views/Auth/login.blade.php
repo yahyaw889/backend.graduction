@@ -126,9 +126,7 @@
         </a>
       </div>
 
-      <div class="muted-row" style="margin-top:8px">
-        <div>Don’t have an account? <a href="#" style="color:var(--accent);text-decoration:none">Register</a></div>
-      </div>
+      
     </form>
   </section>
 

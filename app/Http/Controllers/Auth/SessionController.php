@@ -34,6 +34,6 @@ class SessionController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('welcome'); //can change it later
+        return redirect('/');
     }
 }

@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <h1>Hello</h1>
+    <h1>Hello</h1>  
     
     <form action="{{ route('logout') }}" method="POST" style="display: inline;">
     @csrf
