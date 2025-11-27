@@ -19,7 +19,7 @@
 
           <div class="dropdown">
             <a class="dropdown-toggle d-flex align-items-center text-decoration-none" data-bs-toggle="dropdown">
-              <img src="https://ui-avatars.com/api/?name=أحمد&background=0D8ABC&color=fff" class="rounded-circle" width="42" alt="avatar"/>
+              <img src="https://ui-avatars.com/api/?name=أحمد&background=0D8ABC&color=fff" class="rounded-circle mx-2" width="42" alt="avatar"/>
               <span class="me-2 d-none d-lg-inline">أحمد محمد</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
