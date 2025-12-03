@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\User;
-use Google_Client;
-use App\Helpers\ApiResponse;
+use Google\Client as Google_Client;
+use App\Traits\ApiTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
@@ -16,6 +16,7 @@ use Illuminate\Validation\Rules\Password;
 // ***************************  this page is under maintenance ***********************************
 class AuthController extends Controller
 {
+    use ApiTrait;
     // use Images;
 
     // ******************* Register *************************
@@ -30,7 +31,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return ApiResponse::error("Validation error", $validator->errors(), 422);
+            return $this->unprocessableResponse($validator->errors(), 'Validation error');
         }
 
         try {
@@ -44,14 +45,14 @@ class AuthController extends Controller
 
             $token = $user->createToken("api-token")->plainTextToken;
 
-            return ApiResponse::success([
+            return $this->createdResponse([
                 'token' => $token,
                 'user' => $this->userData($user)
-            ], 'User registered successfully', 201);
+            ], 'User registered successfully');
 
         } catch (\Throwable $th) {
             Log::channel("api")->error($th);
-            return ApiResponse::error("Registration failed", collect(['message' => [$th->getMessage()]]), 500);
+            return $this->errorResponse(['message' => [$th->getMessage()]], 500, 'Registration failed');
         }
     }
 
@@ -63,7 +64,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return ApiResponse::error("Validation error", $validator->errors(), 422);
+            return $this->unprocessableResponse($validator->errors(), 'Validation error');
         }
 
         try {
@@ -71,7 +72,7 @@ class AuthController extends Controller
             $payload = $client->verifyIdToken($request->id_token);
 
             if (!$payload) {
-                return ApiResponse::error('Invalid Google token', collect(['id_token' => ['رمز Google غير صالح']]), 401);
+                return $this->unauthorizedResponse(['id_token' => ['رمز Google غير صالح']], 'Invalid Google token');
             }
 
             $email = $payload['email'];
@@ -89,14 +90,14 @@ class AuthController extends Controller
 
             $token = $user->createToken('api-token')->plainTextToken;
 
-            return ApiResponse::success([
+            return $this->okResponse([
                 'token' => $token,
                 'user' => $this->userData($user)
-            ], 'Login with Google successful', 200);
+            ], 'Login with Google successful');
 
         } catch (\Exception $e) {
             Log::channel("api")->error($e);
-            return ApiResponse::error("Google authentication failed", collect(['message' => [$e->getMessage()]]), 500);
+            return $this->errorResponse(['message' => [$e->getMessage()]], 500, 'Google authentication failed');
         }
     }
 
@@ -108,7 +109,7 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
         if ($validator->fails()) {
-            return ApiResponse::error("Validation error", $validator->errors(), 422);
+            return $this->unprocessableResponse($validator->errors(), 'Validation error');
         }
         try {
 
@@ -118,24 +119,24 @@ class AuthController extends Controller
 
             $user = User::where('email', $request->email)->first();
             if (!$user) {
-                return ApiResponse::error("Invalid email", collect([
+                return $this->unauthorizedResponse([
                     'email' => ['الايميل غير موجود']
-                ]), 401);
+                ], 'Invalid email');
             }
             if (!Hash::check($request->password, $user->password)) {
-                return ApiResponse::error("Invalid password", collect([
+                return $this->unauthorizedResponse([
                     'password' => ['خطأ في كلمة المرور']
-                ]), 401);
+                ], 'Invalid password');
             }
             $token = $user->createToken("api-token")->plainTextToken;
-            return ApiResponse::success([
+            return $this->okResponse([
                 'token' => $token,
                 'user' => $this->userData($user)
             ], 'Login successful');
 
         } catch (\Throwable $th) {
             Log::channel("api")->error($th);
-            return ApiResponse::error("Unexpected error", collect(['message' => [$th->getMessage()]]), 500);
+            return $this->errorResponse(['message' => [$th->getMessage()]], 500, 'Unexpected error');
         }
     }
 
@@ -147,10 +148,10 @@ class AuthController extends Controller
             // dd($request->user);
             $request->user()->tokens()->delete();                  //delete from all browser
             // $request->user()->currentAccessToken()->delete();   //delete form one browser
-            return ApiResponse::success([], "logged out successfully ");
+            return $this->okResponse([], 'Logged out successfully');
         } catch (\Throwable $th) {
             Log::channel("Posts")->error($th->getMessage() . $th->getFile() . $th->getLine());
-            return ApiResponse::error("login failed  ", [], 500);
+            return $this->errorResponse([], 500, 'Logout failed');
         }
     }
 
@@ -161,9 +162,9 @@ class AuthController extends Controller
     {
         $user = User::find($id);
         if (!$user) {
-            return ApiResponse::error('User not found ', [], 404);
+            return $this->notFoundResponse([], 'User not found');
         }
-        return ApiResponse::success(
+        return $this->okResponse(
             $this->userData($user),
             'User data retrieved successfully'
         );

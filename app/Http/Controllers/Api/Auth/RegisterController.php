@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Traits\ApiTrait;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\RegisterRequest;
 use Illuminate\Support\Facades\DB;
 
 class RegisterController extends Controller
 {
+    use ApiTrait;
     // Register API
     public function register(RegisterRequest $request)
     {
@@ -29,11 +31,9 @@ class RegisterController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         DB::commit();
-        return response()->json([
-            'status'  => true,
-            'message' => 'User registered successfully',
+        return $this->createdResponse([
             'user'    => $user,
             'token'   => $token,
-        ], 201);
+        ], 'User registered successfully');
     }
 }

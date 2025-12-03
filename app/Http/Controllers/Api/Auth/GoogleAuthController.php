@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Google_Client;
 use App\Models\User;
+use App\Traits\ApiTrait;
 
 class GoogleAuthController extends Controller
 {
+    use ApiTrait;
     public function googleAuth(Request $request)
     {
         $request->validate([
@@ -20,9 +22,7 @@ class GoogleAuthController extends Controller
             $payload = $client->verifyIdToken($request->id_token);
 
             if (!$payload) {
-                return response()->json([
-                    'error' => 'Invalid Google token',
-                ], 401);
+                return $this->unauthorizedResponse([], 'Invalid Google token');
             }
 
             $email = $payload['email'];
@@ -38,18 +38,14 @@ class GoogleAuthController extends Controller
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            return response()->json([
-                'message' => 'Login successful',
+            return $this->okResponse([
                 'access_token' => $token,
                 'token_type' => 'Bearer',
                 'user' => $user,
-            ]);
+            ], 'Login successful');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Authentication failed',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse(['message' => $e->getMessage()], 500, 'Authentication failed');
         }
     }
 }

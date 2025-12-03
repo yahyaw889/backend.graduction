@@ -16,7 +16,9 @@ return new class extends Migration
             $table->unsignedBigInteger('sender_id');
             $table->unsignedBigInteger('receiver_id')->nullable(); // إذا كانت دردشة فردية
             $table->text('message');
+            $table->boolean('is_read')->default(false);
             $table->boolean('is_ai')->default(false); // هل الرسالة من AI؟
+            $table->timestamp('read_at')->nullable();
             $table->timestamps();
 
             $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
