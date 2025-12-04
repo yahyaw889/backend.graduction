@@ -24,6 +24,10 @@ class SessionController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
+            if(Auth::user()->type == 'patient') {
+                return back()->with('loginError', 'The provided credentials do not match our records.');
+            }
+            
             return redirect()->intended(route('home'));
         }
 

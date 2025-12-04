@@ -1,11 +1,11 @@
 {
 	"info": {
-		"_postman_id": "bd4e8cb6-52fa-4d53-90b6-cf5f60d1642e",
+		"_postman_id": "870df340-b6f4-40e1-8ed1-54562f52d1a0",
 		"name": "Final For Graduation",
 		"description": "API Collection for graduction",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "34529885",
-		"_collection_link": "https://ecommerce-clothes.postman.co/workspace/New-Team-Workspace~8de55ce1-f142-4c9c-af15-9a41261ae002/collection/34529885-bd4e8cb6-52fa-4d53-90b6-cf5f60d1642e?action=share&source=collection_link&creator=34529885"
+		"_collection_link": "https://ecommerce-clothes.postman.co/workspace/New-Team-Workspace~8de55ce1-f142-4c9c-af15-9a41261ae002/collection/34529885-870df340-b6f4-40e1-8ed1-54562f52d1a0?action=share&source=collection_link&creator=34529885"
 	},
 	"item": [
 		{
@@ -995,15 +995,6 @@
 										"type": "text"
 									}
 								],
-								"body": {
-									"mode": "raw",
-									"raw": "[]",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
 								"url": {
 									"raw": "{{base_url}}/api/symptoms",
 									"host": [
@@ -1017,7 +1008,7 @@
 							},
 							"status": "OK",
 							"code": 200,
-							"_postman_previewlanguage": null,
+							"_postman_previewlanguage": "Text",
 							"header": [
 								{
 									"key": "Host",

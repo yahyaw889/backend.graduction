@@ -1,253 +1,432 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Login — Simple Responsive Form</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>تسجيل الدخول - Yahya Wael</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
     <style>
-        :root {
-            --bg: #0f1724;
-            --card: #0b1220;
-            --accent: #6ee7b7;
-            --muted: #9aa4b2;
-            --danger: #ff6b6b;
-            --glass: rgba(255, 255, 255, 0.03);
-            --radius: 14px;
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-        }
-
         * {
-            box-sizing: border-box
-        }
-
-        html,
-        body {
-            height: 100%
-        }
-
-        body {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .login-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Image Section - نص الشاشة */
+        .image-section {
+            flex: 1;
+            background: linear-gradient(135deg, #4389d7 0%, #2b6cb0 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(1000px 600px at 10% 10%, rgba(110, 231, 183, 0.06), transparent 8%), linear-gradient(180deg, #071222 0%, var(--bg) 100%);
-            color: #e6eef6;
-            padding: 32px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .card {
+        .image-section::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: moveBackground 20s linear infinite;
+        }
+
+        @keyframes moveBackground {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(50px, 50px);
+            }
+        }
+
+        .image-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            color: white;
+            padding: 2rem;
+        }
+
+        .image-content img {
+            max-width: 400px;
             width: 100%;
-            max-width: 420px;
-            padding: 32px;
-            border-radius: var(--radius);
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            box-shadow: 0 8px 40px rgba(2, 6, 23, 0.6);
+            height: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: float 3s ease-in-out infinite;
         }
 
-        h1 {
-            margin-top: 0;
-            margin-bottom: 8px;
-            font-size: 26px
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
         }
 
-        p.small {
-            margin: 0 0 20px;
-            color: var(--muted);
+        .image-content h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-top: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        form {
+        .image-content p {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Login Form Section - نص التاني */
+        .form-section {
+            flex: 1;
             display: flex;
-            flex-direction: column;
-            gap: 14px
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            padding: 2rem;
         }
 
-        label {
-            font-size: 13px;
-            color: var(--muted);
-            margin-bottom: 4px
-        }
-
-        input[type=email],
-        input[type=password] {
+        .login-form-container {
             width: 100%;
-            padding: 12px 14px;
+            max-width: 450px;
+            padding: 2rem;
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-section img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section h2 {
+            color: #4389d7;
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-section p {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e0e0e0;
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            background: var(--glass);
-            color: inherit;
-            font-size: 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .form-control:focus {
             outline: none;
-            transition: box-shadow .15s, border-color .15s;
+            border-color: #4389d7;
+            box-shadow: 0 0 0 3px rgba(67, 137, 215, 0.1);
         }
 
-        input:focus {
-            border-color: rgba(110, 231, 183, 0.25);
-            box-shadow: 0 4px 20px rgba(14, 30, 37, 0.45)
+        .form-control.is-invalid {
+            border-color: #dc3545;
         }
 
-        input::placeholder {
-            color: rgba(230, 238, 246, 0.45)
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: block;
         }
 
-        .actions {
+        .form-check {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 8px
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 14px;
+        .form-check-input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .form-check-label {
+            cursor: pointer;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, #4389d7 0%, #2b6cb0 100%);
+            border: none;
             border-radius: 10px;
-            border: 0;
+            color: white;
+            font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            font-size: 15px;
-            background: linear-gradient(90deg, var(--accent), #34d399);
-            color: #042018;
-            box-shadow: 0 8px 24px rgba(52, 211, 153, 0.12);
+            transition: all 0.3s ease;
+            margin-top: 1rem;
         }
 
-        .btn.ghost {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            color: var(--muted)
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(67, 137, 215, 0.3);
         }
 
-        .btn.google {
-            background: #fff;
-            color: #222;
-            flex: 1;
+        .btn-login:active {
+            transform: translateY(0);
         }
 
-        .btn.facebook {
-            background: #1877f2;
-            color: #fff;
-            flex: 1;
+        .divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
         }
 
-        .social-buttons {
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 1rem;
+            position: relative;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .google-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
             display: flex;
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .social-buttons img {
-            width: 20px;
-            height: 20px;
-        }
-
-        .muted-row {
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            color: var(--muted);
-            font-size: 13px
+            justify-content: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
         }
 
-        .error {
-            color: var(--danger);
-            font-size: 13px;
-            margin-top: 4px
+        .google-btn:hover {
+            border-color: #4389d7;
+            background: #f8f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .password-toggle {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: var(--muted);
-            cursor: pointer
+        .google-btn img {
+            width: 24px;
+            height: 24px;
         }
 
-        @media(max-width:520px) {
-            body {
-                padding: 18px
-            }
-
-            .card {
-                padding: 24px
-            }
-
-            .social-buttons {
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .login-container {
                 flex-direction: column;
             }
+
+            .image-section {
+                display: none;
+            }
+
+            .form-section {
+                flex: 1;
+            }
+
+            .image-content h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Loader */
+        #global-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loader-img {
+            width: 80px;
+            height: 80px;
         }
     </style>
 </head>
 
 <body>
-    <section class="card">
-        <div class="logo" style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-            <div
-                style="width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#34d399);display:flex;align-items:center;justify-content:center;color:#022;font-weight:700">
-                LG</div>
-            <h1>Welcome back</h1>
+    <!-- Loader -->
+    <div id="global-loader">
+        <div class="spinner-border" role="status" style="width: 3rem; height: 3rem; color: #4389d7;">
+            <span class="visually-hidden">Loading...</span>
         </div>
-        <p class="small">Login to access your account and continue where you left off.</p>
+    </div>
 
-        <form id="loginForm"  action="{{ route('login.authenticate') }}" method="POST">
-            @csrf
-            <div class="field">
-                <label for="email">Email address</label>
-                <input id="email" name="email" type="email" placeholder="you@example.com"
-                    value="{{ old('email') }}" required />
-                @error('email')
-                    <div class="error" id="err-email">{{ $message }}</div>
-                @enderror
-            </div>
+    <div class="login-container">
 
-            <div class="field">
-                <label for="password">Password</label>
-                <input id="password" name="password" type="password" placeholder="Your password" required
-                    minlength="8" />
-                @error('password')
-                    <div class="error" id="err-password">{{ $message }}</div>
-                @enderror
-            </div>
 
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:2px">
-                <label class="password-toggle"><input type="checkbox" id="showPwd" /> Show password</label>
-                <a href="#" style="color:var(--accent);font-size:13px;text-decoration:none">Forgot password?</a>
-            </div>
+        <!-- Login Form Section - نص التاني -->
+        <div class="form-section">
+            <div class="login-form-container">
+                <!-- Logo Section -->
+                <div class="logo-section">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-4"
+                        style="width: 5rem; height: 5rem; background-color: rgb(67, 137, 215);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity w-10 h-10 text-white" aria-hidden="true"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path>
+                        </svg>
+                    </div>
+                    <p>تسجيل الدخول إلى حسابك</p>
+                </div>
 
-            <div class="actions">
-                <button class="btn" type="submit">Login</button>
-            </div>
+                <!-- Login Form -->
+                <form method="POST" action="{{ route('login.authenticate') }}">
+                    @csrf
 
-            <div class="social-buttons">
-                <a href="{{ route('google.redirect') }}" type="button" class="btn google">
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo" />
-                    Google
+                    <!-- Email Field -->
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i> البريد الإلكتروني
+                        </label>
+                        <input id="email" type="email" class="form-control @error('email') is-invalid @enderror"
+                            name="email" value="{{ old('email') }}" required autocomplete="email" autofocus
+                            placeholder="أدخل بريدك الإلكتروني">
+                        @error('email')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="form-group">
+                        <label for="password">
+                            <i class="fas fa-lock"></i> كلمة المرور
+                        </label>
+                        <input id="password" type="password"
+                            class="form-control @error('password') is-invalid @enderror" name="password" required
+                            autocomplete="current-password" placeholder="أدخل كلمة المرور">
+                        @error('password')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="remember" id="remember"
+                                {{ old('remember') ? 'checked' : '' }}>
+                            <label class="form-check-label" for="remember">
+                                تذكرني
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Login Button -->
+                    <button type="submit" class="btn-login">
+                        <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+                    </button>
+                </form>
+
+                <!-- Divider -->
+                <div class="divider">
+                    <span>أو</span>
+                </div>
+
+                <!-- Google Login -->
+                <a class="google-btn" href="{{ route('google.redirect') }}">
+                    <img src="https://img.icons8.com/color/48/000000/google-logo.png" alt="Google Logo">
+                    <span>تسجيل الدخول بواسطة Google</span>
                 </a>
             </div>
+        </div>
 
+        <!-- Image Section - نص الشاشة -->
+        <div class="image-section">
+            <div class="image-content">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity w-10 h-10 text-white" aria-hidden="true"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
+                <h1>مرحباً بك</h1>
+                <p>سجل دخولك للوصول إلى لوحة التحكم</p>
+            </div>
+        </div>
+    </div>
 
-        </form>
-    </section>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- Hide Loader -->
     <script>
-        const form = document.getElementById('loginForm');
-        const showPwd = document.getElementById('showPwd');
-
-        showPwd.addEventListener('change', e => {
-            const type = e.target.checked ? 'text' : 'password';
-            document.getElementById('password').type = type;
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('global-loader').style.display = 'none';
+            }, 500);
         });
-
-        function clearErrors() {
-            document.querySelectorAll('.error').forEach(el => el.textContent = '');
-        }
-
-        function showError(id, msg) {
-            document.getElementById(id).textContent = msg;
-        }
     </script>
 </body>
 
