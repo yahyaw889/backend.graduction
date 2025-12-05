@@ -2,10 +2,9 @@
 
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\SessionController;
-use App\Http\Controllers\ChatController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\Dashboard\ChatController;
+use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Dashboard\UserController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -34,14 +33,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/', 'chat')->name('index');
         Route::get('/{userId}', 'chatConversation')->name('conversation');
         Route::post('/{userId}', 'sendMessage')->name('send');
+        Route::get('/{userId}/messages', 'getNewMessages')->name('messages');
+        Route::post('/{userId}/typing', 'typing')->name('typing');
     });
 
-    Route::prefix('reports')->controller(ReportController::class)->as('reports.')->group(function(){
-        Route::get('/', 'index')->name('index');
-        Route::post('/', 'store')->name('store');
-        Route::put('/{id}', 'update')->name('update');
-        Route::delete('/{id}', 'delete')->name('delete');
-    });
+    
 
     
 

@@ -153,4 +153,22 @@ class ChatController extends Controller
             }),
         ], 'Doctors retrieved successfully');
     }
+
+    /**
+     * Send typing indicator.
+     */
+    public function typing(Request $request)
+    {
+        $validated = $request->validate([
+            'receiver_id' => 'required|exists:users,id',
+        ]);
+
+        broadcast(new \App\Events\UserTyping(
+            Auth::id(),
+            $validated['receiver_id'],
+            Auth::user()->name
+        ))->toOthers();
+
+        return $this->okResponse([], 'Typing indicator sent');
+    }
 }

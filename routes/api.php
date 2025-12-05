@@ -54,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{userId}', 'show');
         Route::post('/send', 'send');
         Route::patch('/{messageId}/read', 'markAsRead');
+        Route::post('/typing', 'typing');
     });
 
     

@@ -1,69 +1,52 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="mb-0 fw-bold">لوحة تحكم النظام الطبي 🏥</h3>
-        <div class="small-muted">نظام الكشف عن الأمراض الجلدية</div>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="mb-1 fw-bold">لوحة تحكم النظام الطبي 🏥</h3>
+            <div class="small-muted">نظام الكشف عن الأمراض الجلدية</div>
+        </div>
     </div>
 
     <!-- top metrics -->
-    <div class="row g-4 mb-4">
-        <div class="col-sm-6 col-md-3">
-            <div class="card p-3">
+    <div class="row g-3 g-md-4 mb-4">
+        <div class="col-12 col-sm-6 col-lg-6">
+            <div class="card p-3 p-md-4 h-100">
                 <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="small-muted">إجمالي المرضى</div>
+                    <div class="flex-grow-1">
+                        <div class="small-muted mb-2">إجمالي المرضى</div>
                         <div class="metric">{{ $stats['total_users'] }}</div>
-                        <div class="small-muted">المسجلين في النظام</div>
+                        <div class="small-muted mt-2">المسجلين في النظام</div>
                     </div>
-                    <div class="text-muted"><i class="fas fa-users fa-2x"></i></div>
+                    <div class="text-primary" style="font-size: 2.5rem; opacity: 0.2;">
+                        <i class="fas fa-users"></i>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-sm-6 col-md-3">
-            <div class="card p-3">
+
+
+        <div class="col-12 col-sm-6 col-lg-6">
+            <div class="card p-3 p-md-4 h-100">
                 <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="small-muted">التقارير الطبية</div>
-                        <div class="metric">{{ $stats['total_reports'] }}</div>
-                        <div class="small-muted">{{ $stats['pending_assessments'] }} قيد المراجعة</div>
+                    <div class="flex-grow-1">
+                        <div class="small-muted mb-2">الحالات الحرجة</div>
+                        <div class="metric text-danger">{{ $stats['critical_cases'] }}</div>
+                        <div class="small-muted mt-2">تحتاج متابعة فورية</div>
                     </div>
-                    <div class="text-muted"><i class="fas fa-file-medical fa-2x"></i></div>
+                    <div class="text-danger" style="font-size: 2.5rem; opacity: 0.2;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-sm-6 col-md-3">
-            <div class="card p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="small-muted">الحالات الحرجة</div>
-                        <div class="metric">{{ $stats['critical_cases'] }}</div>
-                        <div class="small-muted">تحتاج متابعة فورية</div>
-                    </div>
-                    <div class="text-muted"><i class="fas fa-exclamation-triangle fa-2x"></i></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-sm-6 col-md-3">
-            <div class="card p-3">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <div class="small-muted">معدل الدقة</div>
-                        <div class="metric">94.5%</div>
-                        <div class="small-muted">دقة التشخيص بالذكاء الاصطناعي</div>
-                    </div>
-                    <div class="text-muted"><i class="fas fa-chart-line fa-2x"></i></div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- charts + feed -->
-    <div class="row g-4 mb-4">
-        <div class="col-xl-8">
+    <div class="row g-3 g-md-4 mb-4">
+        <div class="col-12 col-xl-8">
             <div class="card p-3">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -101,7 +84,7 @@
             </div>
         </div>
 
-        <div class="col-xl-4">
+        <div class="col-12 col-xl-4">
             <div class="card p-3">
                 <div class="card-body">
                     <h6 class="mb-3">آخر الفحوصات الطبية</h6>
@@ -140,8 +123,14 @@
                     data: data,
                     tension: 0.4,
                     fill: true,
-                    backgroundColor: 'rgba(13,110,253,0.08)',
-                    borderColor: 'rgba(13,110,253,1)'
+                    backgroundColor: 'rgba(54, 122, 194, 0.1)',
+                    borderColor: '#367ac2',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#367ac2',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 }]
             },
             options: {
@@ -153,7 +142,15 @@
                 },
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
                     }
                 }
             }

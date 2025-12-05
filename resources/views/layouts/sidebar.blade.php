@@ -4,8 +4,6 @@
     <nav class="nav flex-column mt-3 px-1">
         <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}"><i
                 class="fas fa-home"></i><span>الرئيسية</span></a>
-        <a class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}" href="{{ route('reports.index') }}"><i
-                class="fas fa-file-medical"></i><span>التقارير</span></a>
         <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" href="{{ route('chat.index') }}"><i
                 class="fas fa-comments"></i><span>المحادثات</span></a>
         <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}"><i
@@ -26,8 +24,6 @@
         <nav class="nav flex-column">
             <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}"><i
                     class="fas fa-home"></i><span>الرئيسية</span></a>
-            <a class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}"
-                href="{{ route('reports.index') }}"><i class="fas fa-file-medical"></i><span>التقارير</span></a>
             <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" href="{{ route('chat.index') }}"><i
                     class="fas fa-comments"></i><span>المحادثات</span></a>
             <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}"
