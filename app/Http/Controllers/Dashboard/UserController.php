@@ -14,7 +14,7 @@ class UserController extends Controller
         return view('dashboard.users', compact('users'));
     }
 
-    public function storeUser(Request $request)
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -31,7 +31,7 @@ class UserController extends Controller
         return redirect()->back()->with('success', 'User created successfully');
     }
 
-    public function updateUser(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
 
@@ -51,7 +51,7 @@ class UserController extends Controller
         return redirect()->back()->with('success', 'User updated successfully');
     }
 
-    public function deleteUser($id)
+    public function delete($id)
     {
         User::findOrFail($id)->delete();
         return redirect()->back()->with('success', 'User deleted successfully');
