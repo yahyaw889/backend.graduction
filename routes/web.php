@@ -48,6 +48,11 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', 'delete')->name('delete');
     });
 
+    Route::prefix('settings')->controller(App\Http\Controllers\Dashboard\SettingsController::class)->as('settings.')->group(function(){
+        Route::get('/', 'index')->name('index');
+        Route::post('/', 'update')->name('update');
+    });
+
     Route::get('/home', [DashboardController::class, 'index'])->name('home');
 
 });

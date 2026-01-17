@@ -31,3 +31,4 @@ class RegisterController extends Controller
         return redirect()->route('home'); //you can change it later
     }
 }
+    

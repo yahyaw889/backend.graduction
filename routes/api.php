@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AssessmentController;
 use App\Http\Controllers\Api\Auth\AuthSessionController;
 use App\Http\Controllers\Api\Auth\GoogleAuthController;
+use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\ReminderController;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::post('/login', [AuthSessionController::class, 'login']);
+Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/auth/google', [GoogleAuthController::class, 'googleAuth']);
 
 // Protected routes

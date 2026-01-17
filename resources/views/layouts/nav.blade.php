@@ -1,10 +1,11 @@
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container-fluid px-4">
-            <button class="btn btn-light d-md-none me-2" id="sidebarToggle" style="border-radius: 8px;">
+            <button class="btn btn-light d-lg-none me-2" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas" style="border-radius: 8px;">
                 <i class="fas fa-bars"></i>
             </button>
 
-            
+
             <div class="ms-auto d-flex align-items-center gap-3">
 
                 <div class="dropdown mx-3">
@@ -15,9 +16,11 @@
                         <span class="me-2 d-none d-lg-inline">{{ Auth::user()->name ?? 'Admin' }}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 12px;">
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>الملف الشخصي</a>
+                        <li><a class="dropdown-item" href="{{ route('settings.index') }}#profile"><i
+                                    class="fas fa-user me-2"></i>الملف الشخصي</a>
                         </li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>الإعدادات</a></li>
+                        <li><a class="dropdown-item" href="{{ route('settings.index') }}"><i
+                                    class="fas fa-cog me-2"></i>الإعدادات</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
