@@ -1,48 +1,10 @@
 {
     "info": {
-        "name": "Graduation Project API",
+        "name": "graduction",
         "description": "API Documentation",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
-        {
-            "name": "register",
-            "item": [
-                {
-                    "name": "[POST] api/register",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Accept",
-                                "value": "application/json",
-                                "type": "text"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/register",
-                            "host": [
-                                "{{base_url}}"
-                            ],
-                            "path": [
-                                "api",
-                                "register"
-                            ]
-                        },
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"name\": \"name sample value\",\n    \"email\": \"user62@example.com\",\n    \"password\": \"password sample value\",\n    \"password_confirmation\": \"password_confirmation sample value\"\n}",
-                            "options": []
-                        }
-                    }
-                }
-            ]
-        },
         {
             "name": "login",
             "item": [
@@ -83,41 +45,68 @@
                     "name": "google",
                     "item": [
                         {
-                            "name": "callback",
-                            "item": [
-                                {
-                                    "name": "[POST] api/auth/google/callback",
-                                    "request": {
-                                        "method": "POST",
-                                        "header": [
-                                            {
-                                                "key": "Accept",
-                                                "value": "application/json",
-                                                "type": "text"
-                                            },
-                                            {
-                                                "key": "Content-Type",
-                                                "value": "application/json",
-                                                "type": "text"
-                                            }
-                                        ],
-                                        "url": {
-                                            "raw": "{{base_url}}/api/auth/google/callback",
-                                            "host": [
-                                                "{{base_url}}"
-                                            ],
-                                            "path": [
-                                                "api",
-                                                "auth",
-                                                "google",
-                                                "callback"
-                                            ]
-                                        }
+                            "name": "[POST] api/auth/google",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
                                     }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/auth/google",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "google"
+                                    ]
                                 }
-                            ]
+                            }
                         }
                     ]
+                }
+            ]
+        },
+        {
+            "name": "logout",
+            "item": [
+                {
+                    "name": "[POST] api/logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/logout",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "logout"
+                            ]
+                        }
+                    }
                 }
             ]
         },
@@ -155,10 +144,70 @@
             ]
         },
         {
-            "name": "logout",
+            "name": "",
             "item": [
                 {
-                    "name": "[POST] api/logout",
+                    "name": "[GET] api",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "reminders",
+            "item": [
+                {
+                    "name": "[GET] api/reminders",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/reminders",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reminders"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "[POST] api/reminders",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -174,13 +223,658 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/logout",
+                            "raw": "{{base_url}}/api/reminders",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "api",
-                                "logout"
+                                "reminders"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "upcoming",
+                    "item": [
+                        {
+                            "name": "list",
+                            "item": [
+                                {
+                                    "name": "[GET] api/reminders/upcoming/list",
+                                    "request": {
+                                        "method": "GET",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{base_url}}/api/reminders/upcoming/list",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "reminders",
+                                                "upcoming",
+                                                "list"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "[GET] api/reminders/{reminder}",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/reminders/{reminder}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reminders",
+                                "{reminder}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "[PUT] api/reminders/{reminder}",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/reminders/{reminder}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reminders",
+                                "{reminder}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "[DELETE] api/reminders/{reminder}",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/reminders/{reminder}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reminders",
+                                "{reminder}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "",
+                    "item": [
+                        {
+                            "name": "toggle",
+                            "item": [
+                                {
+                                    "name": "[POST] api/reminders/{reminder}/toggle",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{base_url}}/api/reminders/{reminder}/toggle",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "reminders",
+                                                "{reminder}",
+                                                "toggle"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "next-occurrences",
+                            "item": [
+                                {
+                                    "name": "[GET] api/reminders/{reminder}/next-occurrences",
+                                    "request": {
+                                        "method": "GET",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{base_url}}/api/reminders/{reminder}/next-occurrences",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "reminders",
+                                                "{reminder}",
+                                                "next-occurrences"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "exceptions",
+                            "item": [
+                                {
+                                    "name": "[POST] api/reminders/{reminder}/exceptions",
+                                    "request": {
+                                        "method": "POST",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{base_url}}/api/reminders/{reminder}/exceptions",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "reminders",
+                                                "{reminder}",
+                                                "exceptions"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "exceptions",
+                    "item": [
+                        {
+                            "name": "[DELETE] api/reminders/exceptions/{exception}",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/reminders/exceptions/{exception}",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "reminders",
+                                        "exceptions",
+                                        "{exception}"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "assessments",
+            "item": [
+                {
+                    "name": "stats",
+                    "item": [
+                        {
+                            "name": "statistics",
+                            "item": [
+                                {
+                                    "name": "[GET] api/assessments/stats/statistics",
+                                    "request": {
+                                        "method": "GET",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{base_url}}/api/assessments/stats/statistics",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "assessments",
+                                                "stats",
+                                                "statistics"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "[GET] api/assessments/{assessment}",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/assessments/{assessment}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "assessments",
+                                "{assessment}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "[GET] api/assessments",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/assessments",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "assessments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "[POST] api/assessments",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/assessments",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "assessments"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"image_path\": [],\n    \"symptoms_text\": \"symptoms_text sample value\",\n    \"symptoms_selected\": [],\n    \"model_type\": \"model_type sample value\",\n    \"reason\": \"reason sample value\"\n}",
+                            "options": []
+                        }
+                    }
+                },
+                {
+                    "name": "[DELETE] api/assessments/{assessment}",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/assessments/{assessment}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "assessments",
+                                "{assessment}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "chat",
+            "item": [
+                {
+                    "name": "conversations",
+                    "item": [
+                        {
+                            "name": "[GET] api/chat/conversations",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/chat/conversations",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "chat",
+                                        "conversations"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "doctors",
+                    "item": [
+                        {
+                            "name": "[GET] api/chat/doctors",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/chat/doctors",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "chat",
+                                        "doctors"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "[GET] api/chat/{userId}",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/chat/{userId}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "chat",
+                                "{userId}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "send",
+                    "item": [
+                        {
+                            "name": "[POST] api/chat/send",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/chat/send",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "chat",
+                                        "send"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "",
+                    "item": [
+                        {
+                            "name": "read",
+                            "item": [
+                                {
+                                    "name": "[PATCH] api/chat/{messageId}/read",
+                                    "request": {
+                                        "method": "PATCH",
+                                        "header": [
+                                            {
+                                                "key": "Accept",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "key": "Content-Type",
+                                                "value": "application/json",
+                                                "type": "text"
+                                            }
+                                        ],
+                                        "url": {
+                                            "raw": "{{base_url}}/api/chat/{messageId}/read",
+                                            "host": [
+                                                "{{base_url}}"
+                                            ],
+                                            "path": [
+                                                "api",
+                                                "chat",
+                                                "{messageId}",
+                                                "read"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "contact-us",
+            "item": [
+                {
+                    "name": "[POST] api/contact-us",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/contact-us",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "contact-us"
                             ]
                         }
                     }
@@ -191,7 +885,7 @@
     "variable": [
         {
             "key": "base_url",
-            "value": "http://localhost"
+            "value": "http://localhost:8000"
         }
     ]
 }

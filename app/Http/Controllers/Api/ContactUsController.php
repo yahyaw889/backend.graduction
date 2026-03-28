@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\ContactUs;
 use App\Traits\ApiTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ContactUsController extends Controller
 {
@@ -12,14 +14,13 @@ class ContactUsController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
             'message' => 'required|string',
         ]);
-        $contactUs = ContactUs::create([
-            'user_id' => $request->user_id,
+        $contactUs[] = ContactUs::create([
+            'user_id' => Auth::id(),
             'message' => $request->message,
         ]);
-        return $this->createdResponse((array) $contactUs, 'Contact Us created successfully');
+        return $this->createdResponse( $contactUs, 'Contact Us created successfully');
     }
 
     

@@ -14,11 +14,15 @@ return new class extends Migration
         Schema::create('assessments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->json('image_path'); 
+            $table->json('image_path')->nullable(); 
             $table->integer('risk_percentage')->default(0);
-            $table->enum('recommendation', ['مراقبة_منزلية', 'استشارة_طبية', 'رعاية_طارئة']);
-            $table->text('report_text');
-            $table->enum('status', ['قيد_المراجعة', 'مكتمل', 'ملغى'])->default('قيد_المراجعة');
+            $table->enum('recommendation', ['take_precautions' , 'take_precautions_and_see_doctor' , 'see_doctor'])->nullable();
+            $table->text('report_text')->nullable();
+            $table->text('symptoms_text')->nullable();
+            $table->json('symptoms_selected')->nullable();
+            $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending');
+            $table->text('reason')->nullable();
+            $table->enum('model_type' , ['model_image' , 'model_text' , 'both' , 'other'])->default('other');
             $table->timestamps();
         });
     }

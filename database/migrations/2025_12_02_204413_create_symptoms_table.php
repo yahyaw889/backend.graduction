@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('patient_histories', function (Blueprint $table) {
+        Schema::create('symptoms', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');
-            $table->json('data')->nullable();
+            $table->string('name');
+            $table->string('desc')->nullable();
+            $table->enum('category' , ['varicella' , 'other'])->default('varicella');
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('patient_histories');
+        Schema::dropIfExists('symptoms');
     }
 };

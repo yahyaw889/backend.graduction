@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Traits\ApiTrait;
 use Illuminate\Support\Facades\Hash;
 
 class AuthSessionController extends Controller
 {
+    use ApiTrait;
     public function login(Request $request)
     {
         $request->validate([
@@ -19,37 +21,29 @@ class AuthSessionController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Invalid credentials',
-            ], 401);
+            return $this->unauthorizedResponse([], 'Invalid credentials');
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'status'  => true,
-            'message' => 'Login successful',
+        return $this->okResponse([
             'user'    => $user,
             'token'   => $token,
-        ]);
+        ], 'Login successful');
     }
 
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json([
-            'status'  => true,
-            'message' => 'Logged out successfully',
-        ]);
+        return $this->okResponse([], 'Logged out successfully');
     }
 
     public function user(Request $request)
     {
-        return response()->json([
-            'status' => true,
-            'user'   => $request->user(),
-        ]);
+        return $this->okResponse(
+            $request->user(),
+            'User data retrieved successfully'
+        );
     }
 }

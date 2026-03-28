@@ -17,22 +17,22 @@ trait ApiTrait
     /**
      * Prepare response.
      *
-     * @return array
+     * @return JsonResponse
      */
-    public function response($data = [], int $statusCode = Response::HTTP_OK, string $message = ''): JsonResponse
+    public function response($data = [], int $statusCode = Response::HTTP_OK, string $message = '', $errors = null): JsonResponse
     {
         if (empty($message)) {
             $message = Response::$statusTexts[$statusCode];
         }
 
+        $success = $statusCode >= 200 && $statusCode < 300;
+
         return response()->json([
-            
-                'status' => [
-                    'code' => $statusCode,
-                    'message' => $message,
-                ],
-                'records' => $data,
-            ], $statusCode);
+            'success' => $success,
+            'message' => $message,
+            'data' => $success ? $data : null,
+            'errors' => !$success ? ($errors ?? $data) : null,
+        ], $statusCode);
     }
 
     /**
@@ -42,7 +42,7 @@ trait ApiTrait
      */
     public function successResponse($data = [], int $statusCode = Response::HTTP_OK, string $message = '')
     {
-        return $this->response($data, $statusCode, $message);
+        return $this->response($data, $statusCode, $message, null);
     }
 
     /**
@@ -52,7 +52,7 @@ trait ApiTrait
      */
     public function errorResponse($errors = [], int $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR, string $message = '')
     {
-        return $this->response($errors, $statusCode, $message);
+        return $this->response([], $statusCode, $message, $errors);
     }
 
     

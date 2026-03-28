@@ -17,15 +17,20 @@ class SessionController extends Controller
     {
         $request->validate([
             'email' => 'required|email|exists:users,email',
-            'password' => 'required',    
+            'password' => 'required',
         ]);
 
         $credentials = $request->only('email', 'password');
-        if(Auth::attempt($credentials))
-        {
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->route('home');
+
+            if(Auth::user()->type == 'patient') {
+                return back()->with('loginError', 'The provided credentials do not match our records.');
+            }
+            
+            return redirect()->intended(route('home'));
         }
+
         return back()->with('loginError', 'The provided credentials do not match our records.');
     }
 
@@ -34,6 +39,7 @@ class SessionController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect('/');
     }
 }
