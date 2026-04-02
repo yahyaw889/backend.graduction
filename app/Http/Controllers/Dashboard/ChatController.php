@@ -3,148 +3,97 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Events\MessageSent;
-use App\Events\UserTyping;
-use App\Models\Message;
 use App\Models\User;
+use App\Services\ChatService;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
 {
+    public function __construct(protected ChatService $chatService)
+    {
+    }
+
+    /**
+     * List all conversations.
+     */
     public function chat()
     {
-        // Get latest message ID for each sender-receiver pair
-        $latestMessageIds = Message::selectRaw('MAX(id) as id')
-            ->groupBy('sender_id', 'receiver_id')
-            ->pluck('id');
-
-        $conversations = Message::whereIn('id', $latestMessageIds)
-            ->with(['sender', 'receiver'])
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->groupBy(function ($message) {
-                return min($message->sender_id, $message->receiver_id).'-'.max($message->sender_id, $message->receiver_id);
-            })
-            ->map(function ($group) {
-                return $group->first();
-            });
+        $conversations = $this->chatService->getConversations(auth()->id());
 
         return view('dashboard.chat', compact('conversations'));
     }
 
-    public function chatConversation($userId)
+    /**
+     * Show conversation with a specific user.
+     */
+    public function chatConversation(int $userId)
     {
-        $user = User::findOrFail($userId);
-
-        $messages = Message::where(function ($query) use ($userId) {
-            $query->where('sender_id', auth()->guard('web')->user()->id)
-                ->where('receiver_id', $userId);
-        })
-            ->orWhere(function ($query) use ($userId) {
-                $query->where('sender_id', $userId)
-                    ->where('receiver_id', auth()->guard('web')->user()->id);
-            })
-            ->with(['sender', 'receiver'])
-            ->orderBy('created_at', 'asc')
-            ->get();
-
-        // Mark messages as read
-        Message::where('receiver_id', auth()->guard('web')->user()->id)
-            ->where('sender_id', $userId)
-            ->where('is_read', false)
-            ->update([
-                'is_read' => true,
-                'read_at' => now(),
-            ]);
+        $user     = User::findOrFail($userId);
+        $messages = $this->chatService->getConversationMessages(auth()->id(), $userId);
 
         return view('dashboard.chat-conversation', compact('user', 'messages'));
     }
 
-    public function sendMessage(Request $request, $userId)
+    /**
+     * Send a message in a conversation.
+     */
+    public function sendMessage(Request $request, int $userId)
     {
         $request->validate([
-            'message' => 'required|string|max:1000',
+            'message' => 'required|string|max:2000',
         ]);
 
-        $message = Message::create([
-            'sender_id' => auth()->guard('web')->user()->id,
-            'receiver_id' => $userId,
-            'message' => $request->message,
-            'is_ai' => false,
-        ]);
+        $message = $this->chatService->sendMessage(auth()->id(), $userId, $request->message);
 
-        // Load relationships for broadcasting
-        $message->load(['sender', 'receiver']);
-
-        // Broadcast the message in real-time
-        broadcast(new MessageSent($message))->toOthers();
-
-        // Return JSON for AJAX requests
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => [
-                    'id' => $message->id,
-                    'message' => $message->message,
-                    'sender_id' => $message->sender_id,
+                    'id'          => $message->id,
+                    'message'     => $message->message,
+                    'sender_id'   => $message->sender_id,
                     'receiver_id' => $message->receiver_id,
-                    'created_at' => $message->created_at->format('H:i'),
-                    'sender' => [
-                        'id' => $message->sender->id,
+                    'created_at'  => $message->created_at->format('H:i'),
+                    'sender'      => [
+                        'id'   => $message->sender->id,
                         'name' => $message->sender->name,
                     ],
                 ],
             ]);
         }
 
-        return redirect()->route('dashboard.chat.conversation', $userId);
+        return redirect()->route('chat.conversation', $userId);
     }
 
-    public function getNewMessages(Request $request, $userId)
+    /**
+     * Poll for new messages since a given ID.
+     */
+    public function getNewMessages(Request $request, int $userId)
     {
-        $lastMessageId = $request->query('last_message_id', 0);
-
-        $messages = Message::where('id', '>', $lastMessageId)
-            ->where(function ($query) use ($userId) {
-                $query->where('sender_id', auth()->guard('web')->user()->id)
-                    ->where('receiver_id', $userId);
-            })
-            ->orWhere(function ($query) use ($userId, $lastMessageId) {
-                $query->where('id', '>', $lastMessageId)
-                    ->where('sender_id', $userId)
-                    ->where('receiver_id', auth()->guard('web')->user()->id);
-            })
-            ->with(['sender', 'receiver'])
-            ->orderBy('created_at', 'asc')
-            ->get();
+        $lastId   = $request->integer('last_message_id', 0);
+        $messages = $this->chatService->getNewMessages(auth()->id(), $userId, $lastId);
 
         return response()->json([
-            'success' => true,
-            'messages' => $messages->map(function ($message) {
-                return [
-                    'id' => $message->id,
-                    'message' => $message->message,
-                    'sender_id' => $message->sender_id,
-                    'receiver_id' => $message->receiver_id,
-                    'created_at' => $message->created_at->format('H:i'),
-                    'sender' => [
-                        'id' => $message->sender->id,
-                        'name' => $message->sender->name,
-                    ],
-                ];
-            }),
+            'success'  => true,
+            'messages' => $messages->map(fn($m) => [
+                'id'          => $m->id,
+                'message'     => $m->message,
+                'sender_id'   => $m->sender_id,
+                'receiver_id' => $m->receiver_id,
+                'created_at'  => $m->created_at->format('H:i'),
+                'sender'      => ['id' => $m->sender->id, 'name' => $m->sender->name],
+            ]),
         ]);
     }
 
-    public function typing(Request $request, $userId)
+    /**
+     * Broadcast typing indicator.
+     */
+    public function typing(Request $request, int $userId)
     {
-        $user = User::findOrFail($userId);
-        
-        broadcast(new UserTyping(
-            auth()->guard('web')->user()->id,
-            $userId,
-            auth()->guard('web')->user()->name
-        ))->toOthers();
+        User::findOrFail($userId); // ensure user exists
+
+        $this->chatService->broadcastTyping(auth()->id(), $userId, auth()->user()->name);
 
         return response()->json(['success' => true]);
     }

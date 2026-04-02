@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAssessmentRequest;
 use App\Http\Resources\AssessmentResource;
-use App\Jobs\ProcessAssessmentJob;
 use App\Models\Assessment;
 use App\Traits\ApiTrait;
 use App\Traits\Images;
@@ -16,161 +15,170 @@ use Illuminate\Support\Facades\Log;
 
 class AssessmentController extends Controller
 {
-    use ApiTrait , Images;
+    use ApiTrait, Images;
+
     /**
-     * Display a listing of the resource.
+     * List user's assessments with filters and pagination.
+     *
+     * Filters: start_date, end_date, status, risk_level, search
+     * Pagination: per_page (default 10), page
+     * Sorting: sort_by (created_at|risk_percentage), sort_dir (asc|desc)
      */
     public function index(Request $request): JsonResponse
     {
         try {
             $query = Assessment::where('user_id', Auth::id());
 
-            // Filter by date range
-            if ($request->has('start_date')) {
+            // Date range filter
+            if ($request->filled('start_date')) {
                 $query->whereDate('created_at', '>=', $request->start_date);
             }
-            if ($request->has('end_date')) {
+            if ($request->filled('end_date')) {
                 $query->whereDate('created_at', '<=', $request->end_date);
             }
 
-            // Filter by status
-            if ($request->has('status')) {
+            // Status filter
+            if ($request->filled('status')) {
                 $query->where('status', $request->status);
             }
 
-            // Filter by risk level
-            if ($request->has('risk_level')) {
-                switch ($request->risk_level) {
-                    case 'low':
-                        $query->where('risk_percentage', '<', 30);
-                        break;
-                    case 'medium':
-                        $query->whereBetween('risk_percentage', [30, 70]);
-                        break;
-                    case 'high':
-                        $query->where('risk_percentage', '>', 70);
-                        break;
-                }
+            // Risk level filter
+            if ($request->filled('risk_level')) {
+                $query = match ($request->risk_level) {
+                    'low'    => $query->where('risk_percentage', '<', 30),
+                    'medium' => $query->whereBetween('risk_percentage', [30, 70]),
+                    'high'   => $query->where('risk_percentage', '>', 70),
+                    default  => $query,
+                };
             }
 
-            $assessments = $query->orderBy('created_at', 'desc')
-                ->paginate(10);
+            // Full-text search in symptoms
+            if ($request->filled('search')) {
+                $query->where('symptoms_text', 'like', '%' . $request->search . '%');
+            }
+
+            // Sorting
+            $sortBy  = in_array($request->sort_by, ['created_at', 'risk_percentage']) ? $request->sort_by : 'created_at';
+            $sortDir = in_array($request->sort_dir, ['asc', 'desc']) ? $request->sort_dir : 'desc';
+            $query->orderBy($sortBy, $sortDir);
+
+            // Pagination
+            $perPage     = min($request->integer('per_page', 10), 100);
+            $assessments = $query->paginate($perPage);
 
             return $this->okResponse([
                 'assessments' => AssessmentResource::collection($assessments),
-                'pagination' => [
-                    'total' => $assessments->total(),
-                    'per_page' => $assessments->perPage(),
+                'pagination'  => [
+                    'total'        => $assessments->total(),
+                    'per_page'     => $assessments->perPage(),
                     'current_page' => $assessments->currentPage(),
-                    'last_page' => $assessments->lastPage(),
+                    'last_page'    => $assessments->lastPage(),
+                    'from'         => $assessments->firstItem(),
+                    'to'           => $assessments->lastItem(),
                 ],
-            ], 'تم جلب التقييمات بنجاح');
+            ], 'Assessments retrieved successfully');
+
         } catch (\Exception $e) {
             Log::error('Failed to fetch assessments: ' . $e->getMessage());
-            return $this->errorResponse([], 500, 'حدث خطأ أثناء جلب التقييمات');
+            return $this->errorResponse([], 500, 'Failed to retrieve assessments');
         }
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a new assessment.
      */
     public function store(StoreAssessmentRequest $request): JsonResponse
     {
         try {
-            // Create assessment with pending status
-
+            $images = [];
 
             if ($request->hasFile('image_path')) {
                 foreach ($request->file('image_path') as $image) {
-                    $path = $image->store('assessment_images', 'public'); 
-                    $images[] = $path;
+                    $images[] = $image->store('assessment_images', 'public');
                 }
             }
-            $assessment = Assessment::create([
-                'user_id' => Auth::id(),
-                'image_path' => $images,
-                'symptoms_text' => $request->symptoms_text ?? null,
-                'symptoms_selected' => $request->symptoms_selected ?? null,
-                'status' => 'pending',
-            ]);
 
-            // Dispatch job to process assessment in background
-            // ProcessAssessmentJob::dispatch($assessment);
+            $assessment = Assessment::create([
+                'user_id'           => Auth::id(),
+                'image_path'        => $images,
+                'symptoms_text'     => $request->symptoms_text ?? null,
+                'symptoms_selected' => $request->symptoms_selected ?? null,
+                'status'            => 'pending',
+            ]);
 
             return $this->createdResponse(
                 new AssessmentResource($assessment),
-                'تم استلام طلبك بنجاح. جاري المعالجة...'
+                'Assessment submitted successfully. Processing in progress...'
             );
 
         } catch (\Exception $e) {
             Log::error('Failed to create assessment: ' . $e->getMessage());
-            return $this->errorResponse([], 500, 'حدث خطأ أثناء إنشاء التقييم');
+            return $this->errorResponse([], 500, 'Failed to submit assessment');
         }
     }
 
     /**
-     * Display the specified resource.
+     * Show a single assessment.
      */
     public function show(Assessment $assessment): JsonResponse
     {
         try {
-            // Check authorization
             if ($assessment->user_id !== Auth::id()) {
-                return $this->forbiddenResponse([], 'غير مصرح لك بالوصول إلى هذا التقييم');
+                return $this->forbiddenResponse([], 'You are not authorized to view this assessment');
             }
 
             return $this->okResponse(
                 new AssessmentResource($assessment),
-                'تم جلب التقييم بنجاح'
+                'Assessment retrieved successfully'
             );
+
         } catch (\Exception $e) {
             Log::error('Failed to fetch assessment: ' . $e->getMessage());
-            return $this->errorResponse([], 500, 'حدث خطأ أثناء جلب التقييم');
+            return $this->errorResponse([], 500, 'Failed to retrieve assessment');
         }
     }
 
-    
-
     /**
-     * Remove the specified resource from storage.
+     * Delete an assessment.
      */
     public function destroy(Assessment $assessment): JsonResponse
     {
         try {
-            // Check authorization
             if ($assessment->user_id !== Auth::id()) {
-                return $this->forbiddenResponse([], 'غير مصرح لك بحذف هذا التقييم');
+                return $this->forbiddenResponse([], 'You are not authorized to delete this assessment');
             }
 
             $assessment->delete();
 
-            return $this->okResponse([], 'تم حذف التقييم بنجاح');
+            return $this->okResponse([], 'Assessment deleted successfully');
+
         } catch (\Exception $e) {
             Log::error('Failed to delete assessment: ' . $e->getMessage());
-            return $this->errorResponse([], 500, 'حدث خطأ أثناء حذف التقييم');
+            return $this->errorResponse([], 500, 'Failed to delete assessment');
         }
     }
 
     /**
-     * Get statistics for user assessments.
+     * Get statistics summary for user's assessments.
      */
     public function statistics(): JsonResponse
     {
         try {
             $assessments = Assessment::where('user_id', Auth::id())->get();
 
+            $latest = $assessments->sortByDesc('created_at')->first();
+
             return $this->okResponse([
-                'total' => $assessments->count(),
-                'by_status' => $assessments->groupBy('status')->map->count(),
-                'by_recommendation' => $assessments->groupBy('recommendation')->map->count(),
-                'average_risk' => round($assessments->avg('risk_percentage'), 2),
-                'latest' => $assessments->sortByDesc('created_at')->first() 
-                    ? new AssessmentResource($assessments->sortByDesc('created_at')->first())
-                    : null,
-            ], 'تم جلب الإحصائيات بنجاح');
+                'total'              => $assessments->count(),
+                'by_status'          => $assessments->groupBy('status')->map->count(),
+                'by_recommendation'  => $assessments->groupBy('recommendation')->map->count(),
+                'average_risk'       => round($assessments->avg('risk_percentage'), 2),
+                'latest'             => $latest ? new AssessmentResource($latest) : null,
+            ], 'Statistics retrieved successfully');
+
         } catch (\Exception $e) {
             Log::error('Failed to fetch statistics: ' . $e->getMessage());
-            return $this->errorResponse([], 500, 'حدث خطأ أثناء جلب الإحصائيات');
+            return $this->errorResponse([], 500, 'Failed to retrieve statistics');
         }
     }
 }

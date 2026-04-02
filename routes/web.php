@@ -4,13 +4,16 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\SessionController;
 use App\Http\Controllers\Dashboard\ChatController;
 use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\Dashboard\MedicalAdviceController;
+use App\Http\Controllers\Dashboard\SettingsController;
 use App\Http\Controllers\Dashboard\UserController;
 use Illuminate\Support\Facades\Route;
 
+// ─── Auth Routes ──────────────────────────────────────────────────────────────
 
-Route::controller(SessionController::class)->group(function (){
-    Route::get('/', 'login')->name('login');
-    Route::get('/login', 'login')->name('login.create');
+Route::controller(SessionController::class)->group(function () {
+    Route::get('/',       'login')->name('login');
+    Route::get('/login',  'login')->name('login.create');
     Route::post('/login', 'authenticate')->name('login.authenticate');
 });
 
@@ -19,55 +22,64 @@ Route::controller(GoogleAuthController::class)->prefix('auth/google')->as('googl
     Route::get('/callback', 'callback')->name('callback');
 });
 
-
+// ─── Protected Routes ─────────────────────────────────────────────────────────
 
 Route::middleware('auth')->group(function () {
 
-    Route::controller(SessionController::class)->group(function () {
-        Route::post('/logout', 'logout')->name('logout');
+    // Logout
+    Route::post('/logout', [SessionController::class, 'logout'])->name('logout');
+
+    // Dashboard home
+    Route::get('/home', [DashboardController::class, 'index'])->name('home');
+
+    // Chat
+    Route::prefix('chat')->controller(ChatController::class)->as('chat.')->group(function () {
+        Route::get('/',                     'chat')->name('index');
+        Route::get('/{userId}',             'chatConversation')->name('conversation');
+        Route::post('/{userId}',            'sendMessage')->name('send');
+        Route::get('/{userId}/messages',    'getNewMessages')->name('messages');
+        Route::post('/{userId}/typing',     'typing')->name('typing');
     });
 
-
-
-    Route::prefix('chat')->controller(ChatController::class)->as('chat.')->group(function(){
-        Route::get('/', 'chat')->name('index');
-        Route::get('/{userId}', 'chatConversation')->name('conversation');
-        Route::post('/{userId}', 'sendMessage')->name('send');
-        Route::get('/{userId}/messages', 'getNewMessages')->name('messages');
-        Route::post('/{userId}/typing', 'typing')->name('typing');
+    // Users
+    Route::prefix('users')->controller(UserController::class)->as('users.')->group(function () {
+        Route::get('/',         'users')->name('index');
+        Route::post('/',        'store')->name('store');
+        Route::put('/{id}',     'update')->name('update');
+        Route::delete('/{id}',  'delete')->name('delete');
     });
 
-    
-
-    
-
-    Route::prefix('users')->controller(UserController::class)->as('users.')->group(function(){
-        Route::get('/', 'users')->name('index');
-        Route::post('/', 'store')->name('store');
-        Route::put('/{id}', 'update')->name('update');
-        Route::delete('/{id}', 'delete')->name('delete');
+    // Medical Advice
+    Route::prefix('medical-advice')->controller(MedicalAdviceController::class)->as('medical-advice.')->group(function () {
+        Route::get('/',         'index')->name('index');
+        Route::post('/',        'store')->name('store');
+        Route::put('/{id}',     'update')->name('update');
+        Route::delete('/{id}',  'destroy')->name('destroy');
     });
 
-    Route::prefix('settings')->controller(App\Http\Controllers\Dashboard\SettingsController::class)->as('settings.')->group(function(){
-        Route::get('/', 'index')->name('index');
+    // Settings
+    Route::prefix('settings')->controller(SettingsController::class)->as('settings.')->group(function () {
+        Route::get('/',  'index')->name('index');
         Route::post('/', 'update')->name('update');
     });
 
-    Route::get('/home', [DashboardController::class, 'index'])->name('home');
+    // Language Switcher
+    Route::get('/lang/{locale}', function ($locale) {
+        if (in_array($locale, ['ar', 'en'])) {
+            session(['locale' => $locale]);
+        }
+        return back();
+    })->name('lang.switch');
 
+    // Missing Modules (Prepared Routes)
+    Route::prefix('assessments')->controller(\App\Http\Controllers\Dashboard\AssessmentController::class)->as('assessments.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/{assessment}', 'show')->name('show');
+        Route::post('/{assessment}/review', 'review')->name('review');
+    });
+
+    Route::prefix('contact-messages')->controller(\App\Http\Controllers\Dashboard\ContactUsController::class)->as('contact-messages.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::put('/{id}/read', 'markRead')->name('read');
+    });
 });
-
-
-
-
-    
-    // Route::prefix('dashboard')->controller(DashboardController::class)->group(function () {
-    //     Route::get('/', 'index')->name('dashboard');
-    //     Route::get('/reports', 'reports')->name('reports');
-    //     Route::post('/reports', 'storeReport')->name('reports.store');
-    //     Route::put('/reports/{id}', 'updateReport')->name('reports.update');
-    //     Route::delete('/reports/{id}', 'deleteReport')->name('reports.delete');
-    //     Route::get('/chat', 'chat')->name('chat');
-    //     Route::get('/chat/{userId}', 'chatConversation')->name('chat.conversation');
-    //     Route::post('/chat/{userId}', 'sendMessage')->name('chat.send');
-    // });

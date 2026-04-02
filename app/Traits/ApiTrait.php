@@ -19,7 +19,7 @@ trait ApiTrait
      *
      * @return JsonResponse
      */
-    public function response($data = [], int $statusCode = Response::HTTP_OK, string $message = '', $errors = null): JsonResponse
+    public function response(mixed $data = [], int $statusCode = Response::HTTP_OK, string $message = '', mixed $errors = null): JsonResponse
     {
         if (empty($message)) {
             $message = Response::$statusTexts[$statusCode];
@@ -30,17 +30,15 @@ trait ApiTrait
         return response()->json([
             'success' => $success,
             'message' => $message,
-            'data' => $success ? $data : null,
-            'errors' => !$success ? ($errors ?? $data) : null,
+            'data'    => $success ? $data : null,
+            'errors'  => !$success ? ($errors ?? $data) : null,
         ], $statusCode);
     }
 
     /**
-     * Success Response
-     *
-     * @param  array  $data
+     * Success Response — accepts any data type (array, Resource, Collection, Model).
      */
-    public function successResponse($data = [], int $statusCode = Response::HTTP_OK, string $message = '')
+    public function successResponse(mixed $data = [], int $statusCode = Response::HTTP_OK, string $message = ''): JsonResponse
     {
         return $this->response($data, $statusCode, $message, null);
     }
@@ -50,13 +48,13 @@ trait ApiTrait
      *
      * @param  array  $errors
      */
-    public function errorResponse($errors = [], int $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR, string $message = '')
+    public function errorResponse(mixed $errors = [], int $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR, string $message = ''): JsonResponse
     {
         return $this->response([], $statusCode, $message, $errors);
     }
 
     
-    public function okResponse($data = [], string $message = '')
+    public function okResponse(mixed $data = [], string $message = ''): JsonResponse
     {
         return $this->successResponse($data, Response::HTTP_OK, $message);
     }
@@ -66,7 +64,7 @@ trait ApiTrait
      *
      * @param  array  $data
      */
-    public function createdResponse($data = [], string $message = '')
+    public function createdResponse(mixed $data = [], string $message = ''): JsonResponse
     {
         return $this->successResponse($data, Response::HTTP_CREATED, $message);
     }

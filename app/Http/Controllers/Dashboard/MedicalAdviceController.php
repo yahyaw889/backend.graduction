@@ -1,65 +1,81 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Dashboard;
 
+use App\Http\Controllers\Controller;
 use App\Models\MedicalAdvice;
 use Illuminate\Http\Request;
 
 class MedicalAdviceController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * List all medical advice entries with optional filters.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $query = MedicalAdvice::query();
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('desc', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status === 'active' ? 1 : 0);
+        }
+
+        $advices = $query->latest()->paginate(10);
+
+        return view('dashboard.medical-advice', compact('advices'));
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Create a new advice entry.
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'title'  => 'required|string|max:255',
+            'desc'   => 'required|string',
+            'status' => 'boolean',
+        ]);
+
+        $validated['status'] = $request->boolean('status', true);
+
+        MedicalAdvice::create($validated);
+
+        return redirect()->back()->with('success', 'Medical advice created successfully.');
     }
 
     /**
-     * Display the specified resource.
+     * Update an existing advice entry.
      */
-    public function show(MedicalAdvice $medicalAdvice)
+    public function update(Request $request, int $id)
     {
-        //
+        $advice = MedicalAdvice::findOrFail($id);
+
+        $validated = $request->validate([
+            'title'  => 'required|string|max:255',
+            'desc'   => 'required|string',
+            'status' => 'boolean',
+        ]);
+
+        $validated['status'] = $request->boolean('status', $advice->status);
+
+        $advice->update($validated);
+
+        return redirect()->back()->with('success', 'Medical advice updated successfully.');
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Delete an advice entry.
      */
-    public function edit(MedicalAdvice $medicalAdvice)
+    public function destroy(int $id)
     {
-        //
-    }
+        MedicalAdvice::findOrFail($id)->delete();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, MedicalAdvice $medicalAdvice)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(MedicalAdvice $medicalAdvice)
-    {
-        //
+        return redirect()->back()->with('success', 'Medical advice deleted successfully.');
     }
 }

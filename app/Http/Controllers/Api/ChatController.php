@@ -5,169 +5,140 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MessageResource;
 use App\Models\Message;
-use App\Models\User;
+use App\Services\ChatService;
 use App\Services\openaiService;
-use App\Events\MessageSent;
 use App\Traits\ApiTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ChatController extends Controller
 {
     use ApiTrait;
-    public function __construct(public openaiService $openaiService) {}
+
+    public function __construct(
+        protected ChatService $chatService,
+        protected openaiService $openaiService
+    ) {
+    }
 
     /**
      * Get all conversations for the authenticated user.
      */
-    public function conversations()
+    public function conversations(): JsonResponse
     {
-        $messages = Message::where('sender_id', Auth::id())
-            ->orWhere('receiver_id', Auth::id())
+        $userId    = Auth::id();
+        $messages  = Message::where('sender_id', $userId)
+            ->orWhere('receiver_id', $userId)
             ->with(['sender', 'receiver'])
             ->orderBy('created_at', 'desc')
             ->get()
-            ->groupBy(function ($message) {
-                // Group by the other person in the conversation
-                return $message->sender_id === Auth::id() 
-                    ? $message->receiver_id 
+            ->groupBy(function ($message) use ($userId) {
+                return $message->sender_id === $userId
+                    ? $message->receiver_id
                     : $message->sender_id;
             });
 
-        return $this->okResponse([
-            'conversations' => $messages->map(function ($conversation) {
-                return [
-                    'user_id' => $conversation->first()->sender_id === Auth::id() 
-                        ? $conversation->first()->receiver_id 
-                        : $conversation->first()->sender_id,
-                    'last_message' => new MessageResource($conversation->first()),
-                    'unread_count' => $conversation->where('is_read', false)
-                        ->where('receiver_id', Auth::id())
-                        ->count(),
-                ];
-            })->values(),
-        ], 'Conversations retrieved successfully');
+        $conversations = $messages->map(function ($group) use ($userId) {
+            $latest = $group->first();
+            return [
+                'user_id'      => $latest->sender_id === $userId ? $latest->receiver_id : $latest->sender_id,
+                'last_message' => new MessageResource($latest),
+                'unread_count' => $group->where('is_read', false)->where('receiver_id', $userId)->count(),
+            ];
+        })->values();
+
+        return $this->okResponse(
+            ['conversations' => $conversations],
+            'Conversations retrieved successfully'
+        );
     }
 
     /**
-     * Get conversation with a specific user.
+     * Get messages in a specific conversation.
      */
-    public function show($userId)
+    public function show(int $userId): JsonResponse
     {
-        $messages = Message::where(function ($query) use ($userId) {
-                $query->where('sender_id', Auth::id())
-                      ->where('receiver_id', $userId);
-            })
-            ->orWhere(function ($query) use ($userId) {
-                $query->where('sender_id', $userId)
-                      ->where('receiver_id', Auth::id());
-            })
-            ->with(['sender', 'receiver'])
-            ->orderBy('created_at', 'asc')
-            ->get();
+        $messages = $this->chatService->getConversationMessages(Auth::id(), $userId);
 
-        // Mark messages as read
-        Message::where('receiver_id', Auth::id())
-            ->where('sender_id', $userId)
-            ->where('is_read', false)
-            ->update([
-                'is_read' => true,
-                'read_at' => now(),
-            ]);
-
-        return MessageResource::collection($messages);
+        return $this->okResponse(
+            MessageResource::collection($messages),
+            'Conversation retrieved successfully'
+        );
     }
 
     /**
-     * Send a message.
+     * Send a message (optionally trigger AI response).
      */
-    public function send(Request $request)
+    public function send(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'receiver_id' => 'required|exists:users,id',
-            'message' => 'required|string',
-            'ask_ai' => 'sometimes|boolean',
+            'message'     => 'required|string|max:2000',
+            'ask_ai'      => 'sometimes|boolean',
         ]);
 
-        $senderId = Auth::id();
-        $receiverId = $validated['receiver_id'];
-        $userMessage = $validated['message'];
+        $message = $this->chatService->sendMessage(Auth::id(), $validated['receiver_id'], $validated['message']);
 
-        $message = Message::create([
-            'sender_id' => $senderId,
-            'receiver_id' => $receiverId,
-            'message' => $userMessage,
-            'is_ai' => false,
-        ]);
-
-        // Broadcast the message
-        broadcast(new MessageSent($message))->toOthers();
-
-        // Handle AI response if requested
-        if ($request->has('ask_ai') && $request->ask_ai == true) {
-            $this->openaiService->askAI($userMessage, $senderId, $receiverId);
+        if ($request->boolean('ask_ai')) {
+            $this->openaiService->askAI($validated['message'], Auth::id(), $validated['receiver_id']);
         }
 
-        $message->load(['sender', 'receiver']);
-
-        return new MessageResource($message);
+        return $this->createdResponse(
+            new MessageResource($message),
+            'Message sent successfully'
+        );
     }
 
     /**
-     * Mark message as read.
+     * Mark a message as read.
      */
-    public function markAsRead($messageId)
+    public function markAsRead(int $messageId): JsonResponse
     {
         $message = Message::findOrFail($messageId);
 
         if ($message->receiver_id !== Auth::id()) {
-            return $this->forbiddenResponse([], 'Unauthorized');
+            return $this->forbiddenResponse([], 'You cannot mark this message as read');
         }
 
-        $message->update([
-            'is_read' => true,
-            'read_at' => now(),
-        ]);
+        $message = $this->chatService->markAsRead($message);
 
-        return new MessageResource($message);
+        return $this->okResponse(
+            new MessageResource($message),
+            'Message marked as read'
+        );
     }
 
     /**
      * Get available doctors and admins for chat.
      */
-    public function doctors()
+    public function doctors(): JsonResponse
     {
-        // Return both doctors and admins as support staff
-        $supportUsers = User::whereIn('type', ['doctor', 'admin'])->get();
+        $supportUsers = $this->chatService->getSupportUsers()->map(fn($user) => [
+            'id'             => $user->id,
+            'name'           => $user->name,
+            'specialization' => $user->specialization ?? 'Support',
+            'qualification'  => $user->qualification  ?? null,
+            'image'          => $user->image          ?? null,
+            'type'           => $user->type,
+        ]);
 
-        return $this->okResponse([
-            'doctors' => $supportUsers->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'specialization' => $user->specialization ?? 'Support', // Fallback if null
-                    'qualification' => $user->qualification ?? null,
-                    'image' => $user->image ?? null,
-                    'type' => $user->type,
-                ];
-            }),
-        ], 'Doctors retrieved successfully');
+        return $this->okResponse(
+            ['doctors' => $supportUsers],
+            'Support users retrieved successfully'
+        );
     }
 
     /**
      * Send typing indicator.
      */
-    public function typing(Request $request)
+    public function typing(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'receiver_id' => 'required|exists:users,id',
         ]);
 
-        broadcast(new \App\Events\UserTyping(
-            Auth::id(),
-            $validated['receiver_id'],
-            Auth::user()->name
-        ))->toOthers();
+        $this->chatService->broadcastTyping(Auth::id(), $validated['receiver_id'], Auth::user()->name);
 
         return $this->okResponse([], 'Typing indicator sent');
     }

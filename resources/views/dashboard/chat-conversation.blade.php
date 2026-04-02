@@ -1,261 +1,226 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="mb-0 fw-bold">المحادثة مع {{ $user->name }} 💬</h3>
-        <a href="{{ route('chat.index') }}" class="btn btn-outline-secondary">عودة</a>
-    </div>
 
-    <div class="card" style="height: 70vh;">
-        <div class="card-body d-flex flex-column">
-            <div class="flex-grow-1 overflow-auto mb-3" id="chat-messages">
-                @foreach ($messages as $message)
-                    <div class="d-flex mb-3 {{ $message->sender_id == auth()->id() ? 'justify-content-end' : 'justify-content-start' }}"
-                        data-message-id="{{ $message->id }}">
-                        <div class="card {{ $message->sender_id == auth()->id() ? 'bg-primary text-white' : 'bg-light' }}"
-                            style="max-width: 70%;">
-                            <div class="card-body p-2">
-                                <p class="mb-0">{{ $message->message }}</p>
-                                <small class="{{ $message->sender_id == auth()->id() ? 'text-white-50' : 'text-muted' }}"
-                                    style="font-size: 0.75rem;">
-                                    {{ $message->created_at->format('H:i') }}
-                                </small>
-                            </div>
+<div class="page-header mb-3">
+    <div class="d-flex align-items-center gap-3">
+        <a href="{{ route('chat.index') }}" class="icon-btn" title="Back to conversations">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div class="d-flex align-items-center gap-2">
+            <div class="avatar bg-primary bg-opacity-10 text-primary">
+                {{ strtoupper(substr($user->name, 0, 1)) }}
+            </div>
+            <div>
+                <div class="fw-bold" style="font-size:.95rem;">{{ $user->name }}</div>
+                <div class="text-muted" style="font-size:.75rem;">{{ ucfirst($user->type ?? 'User') }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="height: calc(100vh - 240px); min-height: 500px;">
+    <div class="card-body d-flex flex-column p-0">
+        {{-- Messages --}}
+        <div class="flex-grow-1 overflow-auto p-4" id="chat-messages" style="scroll-behavior:smooth;">
+            @foreach ($messages as $message)
+                <div class="d-flex mb-3 {{ $message->sender_id == auth()->id() ? 'justify-content-end' : 'justify-content-start' }}"
+                     data-message-id="{{ $message->id }}">
+                    <div class="px-3 py-2 rounded-3 {{ $message->sender_id == auth()->id() ? 'bg-primary text-white' : '' }}"
+                         style="max-width:70%; {{ $message->sender_id != auth()->id() ? 'background:var(--body-bg); border:1px solid var(--border-color);' : '' }}">
+                        <div style="font-size:.875rem;">{{ $message->message }}</div>
+                        <div class="{{ $message->sender_id == auth()->id() ? 'text-white-50' : 'text-muted' }}" style="font-size:.7rem; margin-top:.2rem;">
+                            {{ $message->created_at->format('H:i') }}
                         </div>
                     </div>
-                @endforeach
-            </div>
+                </div>
+            @endforeach
 
-            <!-- Typing indicator -->
-            <div id="typing-indicator" class="mb-2" style="display: none;">
-                <small class="text-muted">
-                    <i class="fas fa-circle-notch fa-spin"></i> {{ $user->name }} يكتب...
-                </small>
+            {{-- Typing indicator --}}
+            <div id="typing-indicator" class="mb-2 d-none">
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="avatar bg-primary bg-opacity-10 text-primary" style="width:28px;height:28px;font-size:.65rem;">
+                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                    </div>
+                    <div class="px-3 py-2 rounded-3" style="background:var(--body-bg); border:1px solid var(--border-color);">
+                        <span class="text-muted" style="font-size:.78rem;"><i class="fas fa-ellipsis-h fa-beat"></i> {{ $user->name }} is typing…</span>
+                    </div>
+                </div>
             </div>
+        </div>
 
+        {{-- Input Bar --}}
+        <div class="border-top p-3">
             <form id="chat-form" class="d-flex gap-2">
                 @csrf
-                <input type="text" name="message" id="message-input" class="form-control"
-                    placeholder="اكتب رسالتك هنا..." required autocomplete="off">
-                <button type="submit" class="btn btn-primary" id="send-btn">
-                    <i class="fas fa-paper-plane"></i> إرسال
+                <input type="text" name="message" id="message-input"
+                       class="form-control flex-grow-1"
+                       placeholder="Type a message…"
+                       required autocomplete="off">
+                <button type="submit" class="btn btn-primary px-4" id="send-btn">
+                    <i class="fas fa-paper-plane"></i>
                 </button>
             </form>
         </div>
     </div>
+</div>
 
-    @push('scripts')
-        <script>
-            const userId = {{ $user->id }};
-            const authUserId = {{ auth()->id() }};
-            const chatMessages = document.getElementById('chat-messages');
-            const messageInput = document.getElementById('message-input');
-            const chatForm = document.getElementById('chat-form');
-            const typingIndicator = document.getElementById('typing-indicator');
-            const sendBtn = document.getElementById('send-btn');
+@push('scripts')
+<script>
+    const userId        = {{ $user->id }};
+    const authUserId    = {{ auth()->id() }};
+    const chatMessages  = document.getElementById('chat-messages');
+    const messageInput  = document.getElementById('message-input');
+    const chatForm      = document.getElementById('chat-form');
+    const typingIndic   = document.getElementById('typing-indicator');
+    const sendBtn       = document.getElementById('send-btn');
 
-            let lastMessageId = {{ $messages->last()->id ?? 0 }};
-            let typingTimeout = null;
-            let sendingMessage = false; // Prevent duplicate sends
-            const messageIds = new Set(); // Track message IDs to prevent duplicates
+    let lastMessageId  = {{ $messages->last()->id ?? 0 }};
+    let sendingMessage = false;
+    const messageIds   = new Set();
 
-            // Initialize message IDs from existing messages
-            document.querySelectorAll('[data-message-id]').forEach(el => {
-                const id = parseInt(el.getAttribute('data-message-id'));
-                if (id) messageIds.add(id);
+    // Seed existing message IDs
+    document.querySelectorAll('[data-message-id]').forEach(el => {
+        const id = parseInt(el.getAttribute('data-message-id'));
+        if (id) messageIds.add(id);
+    });
+
+    function scrollToBottom() {
+        if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+        const d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+    }
+
+    function addMessage(message, animate = false) {
+        if (messageIds.has(message.id)) return;
+        messageIds.add(message.id);
+        lastMessageId = Math.max(lastMessageId, message.id);
+
+        const isMine = message.sender_id == authUserId;
+        const wrap   = document.createElement('div');
+        wrap.className = `d-flex mb-3 ${isMine ? 'justify-content-end' : 'justify-content-start'}`;
+        wrap.setAttribute('data-message-id', message.id);
+
+        const bubble = document.createElement('div');
+        bubble.className = `px-3 py-2 rounded-3`;
+        bubble.style.maxWidth = '70%';
+        if (isMine) {
+            bubble.classList.add('bg-primary', 'text-white');
+        } else {
+            bubble.style.background    = 'var(--body-bg)';
+            bubble.style.border        = '1px solid var(--border-color)';
+        }
+        if (animate) {
+            bubble.style.opacity   = '0';
+            bubble.style.transform = 'translateY(8px)';
+            bubble.style.transition = 'all 0.25s ease';
+        }
+
+        bubble.innerHTML = `
+            <div style="font-size:.875rem;">${escapeHtml(message.message)}</div>
+            <div class="${isMine ? 'text-white-50' : 'text-muted'}" style="font-size:.7rem;margin-top:.2rem;">${message.created_at}</div>
+        `;
+
+        wrap.appendChild(bubble);
+
+        // Insert before typing indicator
+        chatMessages.insertBefore(wrap, typingIndic);
+
+        if (animate) {
+            requestAnimationFrame(() => {
+                bubble.style.opacity = '1';
+                bubble.style.transform = 'translateY(0)';
+            });
+        }
+
+        scrollToBottom();
+    }
+
+    // Send message
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (sendingMessage) return;
+
+        const text = messageInput.value.trim();
+        if (!text) return;
+
+        sendingMessage = true;
+        sendBtn.disabled = true;
+        messageInput.disabled = true;
+
+        try {
+            const res  = await fetch('{{ route('chat.send', $user->id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ message: text }),
             });
 
-            // Scroll to bottom of chat
-            function scrollToBottom() {
-                if (chatMessages) {
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }
+            const data = await res.json();
+
+            if (data.success) {
+                addMessage(data.message, true);
+                messageInput.value = '';
+            } else {
+                throw new Error(data.message || 'Failed to send');
             }
+        } catch (err) {
+            console.error(err);
+            alert('Failed to send message. Please try again.');
+        } finally {
+            sendingMessage = false;
+            sendBtn.disabled = false;
+            messageInput.disabled = false;
+            messageInput.focus();
+        }
+    });
 
-            // Add message to chat (with duplicate prevention)
-            function addMessage(message, isSent = false) {
-                // Prevent duplicate messages
-                if (messageIds.has(message.id)) {
-                    console.log('Message already exists, skipping:', message.id);
-                    return;
-                }
+    // Typing indicator
+    let lastTypingTime = 0;
+    messageInput.addEventListener('input', () => {
+        const now = Date.now();
+        if (now - lastTypingTime > 1000) {
+            lastTypingTime = now;
+            fetch('{{ route('chat.typing', $user->id) }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+            }).catch(console.error);
+        }
+    });
 
-                messageIds.add(message.id);
-
-                const messageDiv = document.createElement('div');
-                messageDiv.className =
-                    `d-flex mb-3 ${message.sender_id == authUserId ? 'justify-content-end' : 'justify-content-start'}`;
-                messageDiv.setAttribute('data-message-id', message.id);
-
-                const cardClass = message.sender_id == authUserId ? 'bg-primary text-white' : 'bg-light';
-                const timeClass = message.sender_id == authUserId ? 'text-white-50' : 'text-muted';
-
-                messageDiv.innerHTML = `
-                    <div class="card ${cardClass}" style="max-width: 70%; ${isSent ? 'opacity: 0; transform: translateY(10px);' : ''}">
-                        <div class="card-body p-2">
-                            <p class="mb-0">${escapeHtml(message.message)}</p>
-                            <small class="${timeClass}" style="font-size: 0.75rem;">
-                                ${message.created_at}
-                            </small>
-                        </div>
-                    </div>
-                `;
-
-                if (chatMessages) {
-                    chatMessages.appendChild(messageDiv);
-
-                    // Animate new message
-                    if (isSent) {
-                        setTimeout(() => {
-                            const card = messageDiv.querySelector('.card');
-                            if (card) {
-                                card.style.transition = 'all 0.3s ease';
-                                card.style.opacity = '1';
-                                card.style.transform = 'translateY(0)';
-                            }
-                        }, 10);
-                    }
-
-                    scrollToBottom();
-                    lastMessageId = message.id;
-                }
-            }
-
-            // Escape HTML to prevent XSS
-            function escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
-
-            // Send message via AJAX
-            if (chatForm) {
-                chatForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-
-                    // Prevent duplicate submissions
-                    if (sendingMessage) {
-                        console.log('Already sending a message, please wait...');
-                        return;
-                    }
-
-                    const message = messageInput.value.trim();
-                    if (!message) return;
-
-                    // Set sending flag
-                    sendingMessage = true;
-
-                    // Disable form while sending
-                    sendBtn.disabled = true;
-                    messageInput.disabled = true;
-
-                    try {
-                        const response = await fetch(`{{ route('chat.send', $user->id) }}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                message: message
-                            })
-                        });
-
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-
-                        const data = await response.json();
-
-                        if (data.success) {
-                            // Add message to UI
-                            addMessage(data.message, true);
-                            messageInput.value = '';
-                        } else {
-                            throw new Error(data.message || 'Failed to send message');
-                        }
-                    } catch (error) {
-                        console.error('Error sending message:', error);
-                        alert('حدث خطأ أثناء إرسال الرسالة. الرجاء المحاولة مرة أخرى.');
-                    } finally {
-                        // Always re-enable form
-                        sendingMessage = false;
-                        sendBtn.disabled = false;
-                        messageInput.disabled = false;
-                        messageInput.focus();
-                    }
-                });
-            }
-
-            // Typing indicator with debouncing
-            let lastTypingTime = 0;
-            const typingDebounceTime = 1000; // Send typing event max once per second
-
-            if (messageInput) {
-                messageInput.addEventListener('input', function() {
-                    const now = Date.now();
-
-                    // Debounce typing indicator
-                    if (now - lastTypingTime > typingDebounceTime) {
-                        lastTypingTime = now;
-
-                        // Send typing event
-                        fetch(`{{ route('chat.typing', $user->id) }}`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json'
-                            }
-                        }).catch(err => console.error('Typing indicator error:', err));
-                    }
-                });
-            }
-
-            // Listen for new messages via Laravel Echo
-            if (window.Echo) {
-                const channelId = [authUserId, userId].sort((a, b) => a - b).join('-');
-
-                window.Echo.private(`chat.${channelId}`)
-                    .listen('MessageSent', (e) => {
-                        console.log('New message received:', e);
-
-                        // Only add if message is from the other user (not from current user)
-                        if (e.sender_id != authUserId) {
-                            addMessage({
-                                id: e.id,
-                                message: e.message,
-                                sender_id: e.sender_id,
-                                created_at: new Date(e.created_at).toLocaleTimeString('ar-EG', {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                })
-                            });
-                        }
-                    })
-                    .listen('.user.typing', (e) => {
-                        console.log('User typing:', e);
-
-                        // Show typing indicator if other user is typing
-                        if (e.sender_id != authUserId && typingIndicator) {
-                            typingIndicator.style.display = 'block';
-
-                            // Hide after 2 seconds
-                            clearTimeout(window.typingIndicatorTimeout);
-                            window.typingIndicatorTimeout = setTimeout(() => {
-                                typingIndicator.style.display = 'none';
-                            }, 2000);
-                        }
+    // Laravel Echo (Pusher)
+    if (window.Echo) {
+        const channelId = [authUserId, userId].sort((a, b) => a - b).join('-');
+        window.Echo.private(`chat.${channelId}`)
+            .listen('MessageSent', (e) => {
+                if (e.sender_id != authUserId) {
+                    addMessage({
+                        id: e.id,
+                        message: e.message,
+                        sender_id: e.sender_id,
+                        created_at: new Date(e.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
                     });
-            }
+                }
+            })
+            .listen('.user.typing', (e) => {
+                if (e.sender_id != authUserId) {
+                    typingIndic.classList.remove('d-none');
+                    clearTimeout(window._typingTimeout);
+                    window._typingTimeout = setTimeout(() => typingIndic.classList.add('d-none'), 2000);
+                }
+            });
+    }
 
-            // Initial scroll
-            scrollToBottom();
+    scrollToBottom();
+    messageInput.focus();
+</script>
+@endpush
 
-            // Focus on input
-            if (messageInput) {
-                messageInput.focus();
-            }
-        </script>
-    @endpush
 @endsection

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ReminderResource;
+use App\Http\Requests\StoreReminderRequest;
+use App\Http\Requests\UpdateReminderRequest;
 use App\Models\Reminder;
 use App\Models\ReminderException;
 use App\Services\ReminderService;
@@ -16,23 +18,29 @@ use Illuminate\Support\Facades\Validator;
 class ReminderController extends Controller
 {
     use ApiTrait;
-    protected ReminderService $reminderService;
 
-    public function __construct(ReminderService $reminderService)
+    public function __construct(protected ReminderService $reminderService)
     {
-        $this->reminderService = $reminderService;
     }
 
     /**
-     * Display a listing of the user's reminders.
+     * List all reminders for the authenticated user.
+     * Supports filters: active_only, frequency
      */
     public function index(Request $request): JsonResponse
     {
+        $userId     = $request->user()->id;
         $activeOnly = $request->boolean('active_only', false);
-        $reminders = $this->reminderService->getUserReminders(
-            $request->user()->id,
-            $activeOnly
-        );
+
+        $reminders = $this->reminderService->getUserReminders($userId, $activeOnly);
+
+        // Additional filter by frequency
+        if ($request->filled('frequency')) {
+            $freq = $request->frequency;
+            $reminders = $reminders->filter(function ($reminder) use ($freq) {
+                return $reminder->recurrenceRules->contains('frequency', $freq);
+            })->values();
+        }
 
         return $this->okResponse(
             ReminderResource::collection($reminders),
@@ -41,40 +49,11 @@ class ReminderController extends Controller
     }
 
     /**
-     * Store a newly created reminder.
+     * Create a new reminder.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreReminderRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'active' => 'boolean',
-            'recurrence_rules' => 'required|array|min:1',
-            'recurrence_rules.*.frequency' => 'required|in:daily,weekly,monthly,yearly,custom',
-            'recurrence_rules.*.interval' => 'integer|min:1',
-            'recurrence_rules.*.days_of_week' => 'nullable|array',
-            'recurrence_rules.*.days_of_week.*' => 'integer|min:0|max:6',
-            'recurrence_rules.*.days_of_month' => 'nullable|array',
-            'recurrence_rules.*.days_of_month.*' => 'integer|min:1|max:31',
-            'recurrence_rules.*.months_of_year' => 'nullable|array',
-            'recurrence_rules.*.months_of_year.*' => 'integer|min:1|max:12',
-            'recurrence_rules.*.time' => 'nullable|date_format:H:i',
-            'recurrence_rules.*.start_date' => 'required|date',
-            'recurrence_rules.*.end_date' => 'nullable|date|after_or_equal:recurrence_rules.*.start_date',
-            'exceptions' => 'nullable|array',
-            'exceptions.*.date' => 'required|date',
-            'exceptions.*.action' => 'required|in:skip,modify',
-            'exceptions.*.new_time' => 'nullable|date_format:H:i|required_if:exceptions.*.action,modify',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $data = $validator->validated();
+        $data            = $request->validated();
         $data['user_id'] = $request->user()->id;
 
         $reminder = $this->reminderService->createReminder($data);
@@ -86,16 +65,12 @@ class ReminderController extends Controller
     }
 
     /**
-     * Display the specified reminder.
+     * Show a specific reminder.
      */
     public function show(Request $request, Reminder $reminder): JsonResponse
     {
-        // Ensure user owns this reminder
         if ($reminder->user_id !== $request->user()->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized',
-            ], 403);
+            return $this->forbiddenResponse([], 'You do not have access to this reminder');
         }
 
         $reminder->load(['recurrenceRules', 'exceptions']);
@@ -107,48 +82,15 @@ class ReminderController extends Controller
     }
 
     /**
-     * Update the specified reminder.
+     * Update an existing reminder.
      */
-    public function update(Request $request, Reminder $reminder): JsonResponse
+    public function update(UpdateReminderRequest $request, Reminder $reminder): JsonResponse
     {
-        // Ensure user owns this reminder
         if ($reminder->user_id !== $request->user()->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized',
-            ], 403);
+            return $this->forbiddenResponse([], 'You do not have access to this reminder');
         }
 
-        $validator = Validator::make($request->all(), [
-            'title' => 'string|max:255',
-            'description' => 'nullable|string',
-            'active' => 'boolean',
-            'recurrence_rules' => 'array',
-            'recurrence_rules.*.frequency' => 'required|in:daily,weekly,monthly,yearly,custom',
-            'recurrence_rules.*.interval' => 'integer|min:1',
-            'recurrence_rules.*.days_of_week' => 'nullable|array',
-            'recurrence_rules.*.days_of_week.*' => 'integer|min:0|max:6',
-            'recurrence_rules.*.days_of_month' => 'nullable|array',
-            'recurrence_rules.*.days_of_month.*' => 'integer|min:1|max:31',
-            'recurrence_rules.*.months_of_year' => 'nullable|array',
-            'recurrence_rules.*.months_of_year.*' => 'integer|min:1|max:12',
-            'recurrence_rules.*.time' => 'nullable|date_format:H:i',
-            'recurrence_rules.*.start_date' => 'required|date',
-            'recurrence_rules.*.end_date' => 'nullable|date|after_or_equal:recurrence_rules.*.start_date',
-            'exceptions' => 'nullable|array',
-            'exceptions.*.date' => 'required|date',
-            'exceptions.*.action' => 'required|in:skip,modify',
-            'exceptions.*.new_time' => 'nullable|date_format:H:i|required_if:exceptions.*.action,modify',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $reminder = $this->reminderService->updateReminder($reminder, $validator->validated());
+        $reminder = $this->reminderService->updateReminder($reminder, $request->validated());
 
         return $this->okResponse(
             new ReminderResource($reminder),
@@ -157,16 +99,12 @@ class ReminderController extends Controller
     }
 
     /**
-     * Remove the specified reminder.
+     * Delete a reminder.
      */
     public function destroy(Request $request, Reminder $reminder): JsonResponse
     {
-        // Ensure user owns this reminder
         if ($reminder->user_id !== $request->user()->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized',
-            ], 403);
+            return $this->forbiddenResponse([], 'You do not have access to this reminder');
         }
 
         $this->reminderService->deleteReminder($reminder);
@@ -175,16 +113,12 @@ class ReminderController extends Controller
     }
 
     /**
-     * Toggle reminder active status.
+     * Toggle the active status of a reminder.
      */
     public function toggle(Request $request, Reminder $reminder): JsonResponse
     {
-        // Ensure user owns this reminder
         if ($reminder->user_id !== $request->user()->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized',
-            ], 403);
+            return $this->forbiddenResponse([], 'You do not have access to this reminder');
         }
 
         $reminder = $this->reminderService->toggleActive($reminder);
@@ -197,62 +131,49 @@ class ReminderController extends Controller
 
     /**
      * Get upcoming reminders.
+     * Supports: start_date, end_date, limit
      */
     public function upcoming(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'limit' => 'integer|min:1|max:100',
+            'end_date'   => 'nullable|date|after_or_equal:start_date',
+            'limit'      => 'integer|min:1|max:100',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->unprocessableResponse($validator->errors()->toArray(), 'Validation failed');
         }
 
-        $startDate = $request->start_date ? Carbon::parse($request->start_date) : null;
-        $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
-        $limit = $request->limit ?? 50;
+        $startDate = $request->filled('start_date') ? Carbon::parse($request->start_date) : null;
+        $endDate   = $request->filled('end_date')   ? Carbon::parse($request->end_date)   : null;
+        $limit     = $request->integer('limit', 50);
 
-        $upcomingReminders = $this->reminderService->getUpcomingReminders(
+        $upcoming = $this->reminderService->getUpcomingReminders(
             $request->user()->id,
             $startDate,
             $endDate,
             $limit
         );
 
-        return $this->okResponse(
-            $upcomingReminders,
-            'Upcoming reminders retrieved successfully'
-        );
+        return $this->okResponse($upcoming, 'Upcoming reminders retrieved successfully');
     }
 
     /**
-     * Get next occurrences for a reminder.
+     * Get next N occurrences for a reminder.
      */
     public function nextOccurrences(Request $request, Reminder $reminder): JsonResponse
     {
-        // Ensure user owns this reminder
         if ($reminder->user_id !== $request->user()->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized',
-            ], 403);
+            return $this->forbiddenResponse([], 'You do not have access to this reminder');
         }
 
-        $count = $request->integer('count', 10);
-        $count = min($count, 50); // Max 50
+        $count = min($request->integer('count', 10), 50);
 
         $reminder->load(['recurrenceRules', 'exceptions']);
         $occurrences = $this->reminderService->getNextOccurrences($reminder, $count);
 
-        return $this->okResponse(
-            $occurrences,
-            'Next occurrences retrieved successfully'
-        );
+        return $this->okResponse($occurrences, 'Next occurrences retrieved successfully');
     }
 
     /**
@@ -260,43 +181,32 @@ class ReminderController extends Controller
      */
     public function addException(Request $request, Reminder $reminder): JsonResponse
     {
-        // Ensure user owns this reminder
         if ($reminder->user_id !== $request->user()->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized',
-            ], 403);
+            return $this->forbiddenResponse([], 'You do not have access to this reminder');
         }
 
         $validator = Validator::make($request->all(), [
-            'date' => 'required|date',
-            'action' => 'required|in:skip,modify',
+            'date'     => 'required|date',
+            'action'   => 'required|in:skip,modify',
             'new_time' => 'nullable|date_format:H:i|required_if:action,modify',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
+            return $this->unprocessableResponse($validator->errors()->toArray(), 'Validation failed');
         }
 
         $exception = $this->reminderService->createException($reminder, $validator->validated());
 
-        return $this->createdResponse(
-            $exception,
-            'Exception added successfully'
-        );
+        return $this->createdResponse($exception, 'Exception added successfully');
     }
 
     /**
-     * Remove an exception.
+     * Delete a reminder exception.
      */
     public function deleteException(Request $request, ReminderException $exception): JsonResponse
     {
-        // Ensure user owns this reminder
         if ($exception->reminder->user_id !== $request->user()->id) {
-            return $this->forbiddenResponse([], 'Unauthorized');
+            return $this->forbiddenResponse([], 'You do not have access to this exception');
         }
 
         $this->reminderService->deleteException($exception);
