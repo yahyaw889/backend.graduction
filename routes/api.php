@@ -9,12 +9,17 @@ use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\ReminderController;
 use App\Http\Controllers\Api\ContactUsController;
 use App\Http\Controllers\Api\SymptomController;
+use App\Http\Controllers\Api\AiDiagnosisController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::post('/login', [AuthSessionController::class, 'login']);
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/auth/google', [GoogleAuthController::class, 'googleAuth']);
+
+// AI Diagnosis Route (Public for testing)
+Route::post('/ai-diagnosis', [AiDiagnosisController::class, 'diagnose']);
+Route::get('/ai-diagnosis/image/{filename}', [AiDiagnosisController::class, 'showImage']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {

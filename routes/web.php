@@ -7,9 +7,13 @@ use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\MedicalAdviceController;
 use App\Http\Controllers\Dashboard\SettingsController;
 use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\Dashboard\AiDiagnosisController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Auth Routes ──────────────────────────────────────────────────────────────
+
+// Test AI Route
+Route::view('/test-ai', 'test-ai');
 
 Route::controller(SessionController::class)->group(function () {
     Route::get('/',       'login')->name('login');
@@ -54,6 +58,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/',         'index')->name('index');
         Route::post('/',        'store')->name('store');
         Route::put('/{id}',     'update')->name('update');
+        Route::delete('/{id}',  'destroy')->name('destroy');
+    });
+
+    // AI Diagnoses
+    Route::prefix('ai-diagnoses')->controller(AiDiagnosisController::class)->as('ai-diagnoses.')->group(function () {
+        Route::get('/',         'index')->name('index');
         Route::delete('/{id}',  'destroy')->name('destroy');
     });
 

@@ -20,7 +20,7 @@
                 <span class="nav-icon"><i class="fas fa-comments"></i></span>
                 <span>{{ __('dashboard.messages') }}</span>
                 @php $unread = \App\Models\Message::where('is_read', false)->count(); @endphp
-                @if($unread > 0)
+                @if ($unread > 0)
                     <span class="badge bg-primary ms-auto" style="font-size:.68rem;">{{ $unread }}</span>
                 @endif
             </a>
@@ -34,15 +34,23 @@
                 <span class="nav-icon"><i class="fas fa-users"></i></span>
                 <span>{{ __('dashboard.users') }}</span>
             </a>
-            <a class="nav-link {{ request()->routeIs('medical-advice.*') ? 'active' : '' }}" href="{{ route('medical-advice.index') }}">
+            <a class="nav-link {{ request()->routeIs('medical-advice.*') ? 'active' : '' }}"
+                href="{{ route('medical-advice.index') }}">
                 <span class="nav-icon"><i class="fas fa-stethoscope"></i></span>
                 <span>{{ __('dashboard.medical_advice') }}</span>
             </a>
-            <a class="nav-link {{ request()->routeIs('assessments.*') ? 'active' : '' }}" href="{{ route('assessments.index') ?? '#' }}">
+            <a class="nav-link {{ request()->routeIs('assessments.*') ? 'active' : '' }}"
+                href="{{ route('assessments.index') ?? '#' }}">
                 <span class="nav-icon"><i class="fas fa-notes-medical"></i></span>
                 <span>{{ __('dashboard.assessments') }}</span>
             </a>
-            <a class="nav-link {{ request()->routeIs('contact-messages.*') ? 'active' : '' }}" href="{{ route('contact-messages.index') ?? '#' }}">
+            <a class="nav-link {{ request()->routeIs('ai-diagnoses.*') ? 'active' : '' }}"
+                href="{{ route('ai-diagnoses.index') }}">
+                <span class="nav-icon"><i class="fas fa-robot"></i></span>
+                <span>AI Diagnoses</span>
+            </a>
+            <a class="nav-link {{ request()->routeIs('contact-messages.*') ? 'active' : '' }}"
+                href="{{ route('contact-messages.index') ?? '#' }}">
                 <span class="nav-icon"><i class="fas fa-envelope"></i></span>
                 <span>{{ __('dashboard.contact_messages') }}</span>
             </a>
@@ -52,7 +60,8 @@
     <div class="sidebar-section">
         <div class="sidebar-section-label">{{ __('dashboard.system') }}</div>
         <nav class="nav flex-column">
-            <a class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" href="{{ route('settings.index') }}">
+            <a class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}"
+                href="{{ route('settings.index') }}">
                 <span class="nav-icon"><i class="fas fa-cog"></i></span>
                 <span>{{ __('dashboard.settings') }}</span>
             </a>
@@ -63,7 +72,7 @@
     <div class="sidebar-footer">
         <div class="sidebar-user">
             <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name ?? 'Admin') }}&background=4f46e5&color=fff&size=64"
-                 class="user-avatar" alt="avatar">
+                class="user-avatar" alt="avatar">
             <div>
                 <div class="user-name">{{ Auth::user()->name ?? 'Admin' }}</div>
                 <div class="user-role">{{ ucfirst(Auth::user()->type ?? 'Admin') }}</div>
@@ -87,42 +96,58 @@
             <div class="sidebar-section-label">{{ __('dashboard.main') }}</div>
             <nav class="nav flex-column">
                 <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">
-                    <span class="nav-icon"><i class="fas fa-home"></i></span><span>{{ __('dashboard.dashboard') }}</span>
+                    <span class="nav-icon"><i
+                            class="fas fa-home"></i></span><span>{{ __('dashboard.dashboard') }}</span>
                 </a>
-                <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}" href="{{ route('chat.index') }}">
-                    <span class="nav-icon"><i class="fas fa-comments"></i></span><span>{{ __('dashboard.messages') }}</span>
+                <a class="nav-link {{ request()->routeIs('chat.*') ? 'active' : '' }}"
+                    href="{{ route('chat.index') }}">
+                    <span class="nav-icon"><i
+                            class="fas fa-comments"></i></span><span>{{ __('dashboard.messages') }}</span>
                 </a>
             </nav>
         </div>
         <div class="sidebar-section">
             <div class="sidebar-section-label">{{ __('dashboard.management') }}</div>
             <nav class="nav flex-column">
-                <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
+                <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}"
+                    href="{{ route('users.index') }}">
                     <span class="nav-icon"><i class="fas fa-users"></i></span><span>{{ __('dashboard.users') }}</span>
                 </a>
-                <a class="nav-link {{ request()->routeIs('medical-advice.*') ? 'active' : '' }}" href="{{ route('medical-advice.index') }}">
-                    <span class="nav-icon"><i class="fas fa-stethoscope"></i></span><span>{{ __('dashboard.medical_advice') }}</span>
+                <a class="nav-link {{ request()->routeIs('medical-advice.*') ? 'active' : '' }}"
+                    href="{{ route('medical-advice.index') }}">
+                    <span class="nav-icon"><i
+                            class="fas fa-stethoscope"></i></span><span>{{ __('dashboard.medical_advice') }}</span>
                 </a>
-                <a class="nav-link {{ request()->routeIs('assessments.*') ? 'active' : '' }}" href="{{ route('assessments.index') ?? '#' }}">
-                    <span class="nav-icon"><i class="fas fa-notes-medical"></i></span><span>{{ __('dashboard.assessments') }}</span>
+                <a class="nav-link {{ request()->routeIs('assessments.*') ? 'active' : '' }}"
+                    href="{{ route('assessments.index') ?? '#' }}">
+                    <span class="nav-icon"><i
+                            class="fas fa-notes-medical"></i></span><span>{{ __('dashboard.assessments') }}</span>
                 </a>
-                <a class="nav-link {{ request()->routeIs('contact-messages.*') ? 'active' : '' }}" href="{{ route('contact-messages.index') ?? '#' }}">
-                    <span class="nav-icon"><i class="fas fa-envelope"></i></span><span>{{ __('dashboard.contact_messages') }}</span>
+                <a class="nav-link {{ request()->routeIs('ai-diagnoses.*') ? 'active' : '' }}"
+                    href="{{ route('ai-diagnoses.index') }}">
+                    <span class="nav-icon"><i class="fas fa-robot"></i></span><span>AI Diagnoses</span>
+                </a>
+                <a class="nav-link {{ request()->routeIs('contact-messages.*') ? 'active' : '' }}"
+                    href="{{ route('contact-messages.index') ?? '#' }}">
+                    <span class="nav-icon"><i
+                            class="fas fa-envelope"></i></span><span>{{ __('dashboard.contact_messages') }}</span>
                 </a>
             </nav>
         </div>
         <div class="sidebar-section">
             <div class="sidebar-section-label">{{ __('dashboard.system') }}</div>
             <nav class="nav flex-column">
-                <a class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" href="{{ route('settings.index') }}">
-                    <span class="nav-icon"><i class="fas fa-cog"></i></span><span>{{ __('dashboard.settings') }}</span>
+                <a class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}"
+                    href="{{ route('settings.index') }}">
+                    <span class="nav-icon"><i
+                            class="fas fa-cog"></i></span><span>{{ __('dashboard.settings') }}</span>
                 </a>
             </nav>
         </div>
         <div class="sidebar-footer mt-auto">
             <div class="sidebar-user">
                 <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name ?? 'Admin') }}&background=4f46e5&color=fff&size=64"
-                     class="user-avatar" alt="avatar">
+                    class="user-avatar" alt="avatar">
                 <div>
                     <div class="user-name">{{ Auth::user()->name ?? 'Admin' }}</div>
                     <div class="user-role">{{ ucfirst(Auth::user()->type ?? 'Admin') }}</div>

@@ -16,7 +16,7 @@ class OpenAIService
     public function __construct()
     {
         $this->apiKey = env('OPENAI_API_KEY', 'YOUR_AI_API_KEY');
-        $this->apiUrl = env('OPENAI_API_URL', 'https://api.x.ai/v1/chat/completions');
+        $this->apiUrl = env('OPENAI_API_URL', 'https://api.openai.com/v1/chat/completions');
     }
 
     public function askAI($userMessage, $senderId, $receiverId)
@@ -25,7 +25,7 @@ class OpenAIService
             'Authorization' => 'Bearer ' . $this->apiKey,
             'Content-Type' => 'application/json',
         ])->post($this->apiUrl, [
-            'model' => 'grok-beta',
+            'model' => 'gpt-4o-mini',
             'messages' => [
                 ['role' => 'user', 'content' => $userMessage]
             ],
@@ -56,7 +56,7 @@ class OpenAIService
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
             ])->timeout(30)->post($this->apiUrl, [
-                'model' => 'grok-beta',
+                'model' => 'gpt-4o-mini',
                 'messages' => [
                     ['role' => 'system', 'content' => 'أنت مساعد طبي ذكي. قم بتحليل الأعراض وتقديم تقييم للخطورة والتوصيات.'],
                     ['role' => 'user', 'content' => $prompt]

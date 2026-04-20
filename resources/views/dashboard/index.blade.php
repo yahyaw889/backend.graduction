@@ -2,189 +2,193 @@
 
 @section('content')
 
-<div class="page-header">
-    <div>
-        <h1 class="page-title">{{ __('dashboard.dashboard_overview') }}</h1>
-        <div class="page-subtitle">{{ __('dashboard.dashboard_sub') }}</div>
+<div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <div style="font-weight: 700; font-size: 1.1rem; color: #1e3a8a;">
+            <i class="far fa-calendar-alt me-2"></i> {{ date('Y-m-d') }}
+        </div>
     </div>
-    <div class="d-flex gap-2">
-        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
-            <i class="fas fa-print me-1"></i> {{ __('dashboard.print_report') }}
-        </button>
-        <a href="{{ route('users.index') }}" class="btn btn-primary btn-sm">
-            <i class="fas fa-users me-1"></i> {{ __('dashboard.manage_users') }}
-        </a>
+    <div class="text-start" style="text-align: right;">
+        <h1 class="page-title mb-1" style="font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 1.5rem; color: #1e293b;">لوحة التحكم</h1>
+        <div class="page-subtitle text-muted" style="font-size: .85rem;">نظرة عامة على أداء النظام والفحوصات</div>
     </div>
 </div>
 
-{{-- Metric Cards --}}
 <div class="row g-3 mb-4">
+    <!-- Active Users (Yellow) -->
     <div class="col-6 col-lg-3">
-        <div class="card metric-card" style="color: var(--primary);">
-            <div class="metric-label">{{ __('dashboard.total_patients') }}</div>
-            <div class="metric-value" style="color:var(--text-main);">{{ $stats['total_users'] }}</div>
-            <div class="metric-sub" style="color:var(--success);"><i class="fas fa-arrow-up mx-1"></i>{{ __('dashboard.registered_users') }}</div>
-            <div class="metric-icon-bg" style="background: rgba(79,70,229,.12); color:var(--primary);">
-                <i class="fas fa-users"></i>
+        <div class="card p-4 text-center border-0 shadow-sm h-100" style="border-radius: 12px; background: #fff;">
+            <div class="d-flex justify-content-center align-items-center mb-3">
+                <span class="text-warning fw-bold d-flex align-items-center gap-2" style="background: rgba(234,179,8,0.1); padding: 5px 12px; border-radius: 8px; font-size: .85rem;">
+                    <i class="fas fa-users"></i> إجمالي المستخدمين
+                </span>
             </div>
+            <div class="fs-3 fw-bold text-dark">{{ $stats['total_users'] ?? 0 }}</div>
+            <div class="text-muted" style="font-size: .75rem;">مريض / طبيب</div>
         </div>
     </div>
 
+    <!-- Critical Cases (Red) -->
     <div class="col-6 col-lg-3">
-        <div class="card metric-card" style="color: var(--info);">
-            <div class="metric-label">{{ __('dashboard.total_assessments') }}</div>
-            <div class="metric-value" style="color:var(--text-main);">{{ $stats['total_assessments'] }}</div>
-            <div class="metric-sub" style="color:var(--info);"><i class="fas fa-notes-medical mx-1"></i>{{ __('dashboard.all_time') }}</div>
-            <div class="metric-icon-bg" style="background: rgba(6,182,212,.12); color:var(--info);">
-                <i class="fas fa-notes-medical"></i>
+        <div class="card p-4 text-center border-0 shadow-sm h-100" style="border-radius: 12px; background: #fff;">
+            <div class="d-flex justify-content-center align-items-center mb-3">
+                <span class="text-danger fw-bold d-flex align-items-center gap-2" style="background: rgba(239,68,68,0.1); padding: 5px 12px; border-radius: 8px; font-size: .85rem;">
+                    <i class="fas fa-heartbeat"></i> الحالات الحرجة
+                </span>
             </div>
+            <div class="fs-3 fw-bold text-danger">{{ $stats['critical_cases'] ?? 0 }}</div>
+            <div class="text-muted" style="font-size: .75rem;">تحتاج متابعة</div>
         </div>
     </div>
 
+    <!-- AI Diagnoses (Purple) -->
     <div class="col-6 col-lg-3">
-        <div class="card metric-card" style="color: var(--warning);">
-            <div class="metric-label">{{ __('dashboard.pending_review') }}</div>
-            <div class="metric-value" style="color:var(--text-main);">{{ $stats['pending_assessments'] }}</div>
-            <div class="metric-sub" style="color:var(--warning);"><i class="fas fa-clock mx-1"></i>{{ __('dashboard.awaiting_analysis') }}</div>
-            <div class="metric-icon-bg" style="background: rgba(245,158,11,.12); color:var(--warning);">
-                <i class="fas fa-hourglass-half"></i>
+        <div class="card p-4 text-center border-0 shadow-sm h-100" style="border-radius: 12px; background: #fff;">
+            <div class="d-flex justify-content-center align-items-center mb-3">
+                <span class="fw-bold d-flex align-items-center gap-2" style="color: #8b5cf6; background: rgba(139,92,246,0.1); padding: 5px 12px; border-radius: 8px; font-size: .85rem;">
+                    <i class="fas fa-robot"></i> الفحوصات الذكية
+                </span>
             </div>
+            <div class="fs-3 fw-bold text-dark">{{ $stats['total_assessments'] ?? 0 }}</div>
+            <div class="text-muted" style="font-size: .75rem;">تشخيص AI</div>
         </div>
     </div>
 
+    <!-- Total Assessments (Green) -->
     <div class="col-6 col-lg-3">
-        <div class="card metric-card" style="color: var(--danger);">
-            <div class="metric-label">{{ __('dashboard.critical_cases') }}</div>
-            <div class="metric-value" style="color:var(--text-main);">{{ $stats['critical_cases'] }}</div>
-            <div class="metric-sub" style="color:var(--danger);"><i class="fas fa-exclamation-triangle mx-1"></i>{{ __('dashboard.need_follow_up') }}</div>
-            <div class="metric-icon-bg" style="background: rgba(239,68,68,.12); color:var(--danger);">
-                <i class="fas fa-heartbeat"></i>
+        <div class="card p-4 text-center border-0 shadow-sm h-100" style="border-radius: 12px; background: #fff;">
+            <div class="d-flex justify-content-center align-items-center mb-3">
+                <span class="text-success fw-bold d-flex align-items-center gap-2" style="background: rgba(16,185,129,0.1); padding: 5px 12px; border-radius: 8px; font-size: .85rem;">
+                    <i class="fas fa-chart-line"></i> إجمالي التقييمات
+                </span>
             </div>
+            <div class="fs-3 fw-bold text-success">{{ $stats['total_assessments'] ?? 0 }}</div>
+            <div class="text-muted" style="font-size: .75rem;">تقييم طبي مكتمل</div>
         </div>
     </div>
 </div>
 
-{{-- Charts + Recent Feed --}}
 <div class="row g-3 mb-4">
-    {{-- Chart --}}
-    <div class="col-12 col-xl-8">
-        <div class="card h-100">
+    <!-- Chart Section -->
+    <div class="col-12 col-xl-9">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
             <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                        <h6 class="mb-0 fw-bold">Assessment Analytics</h6>
-                        <div class="text-muted" style="font-size:.78rem;">Diagnoses per day — last 30 days</div>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="fw-bold m-0" style="color: #1e3a8a; border-inline-start: 4px solid #1e3a8a; padding-inline-start: 10px;">تحليل الفحوصات والنمو الشهري</h6>
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="d-flex align-items-center gap-2" style="font-size: .75rem; font-weight: 600;">
+                            <span style="width: 25px; height: 10px; background: #10b981; border-radius: 2px;"></span> نمو الحالات
+                        </div>
+                        <div class="d-flex align-items-center gap-2" style="font-size: .75rem; font-weight: 600;">
+                            <span style="width: 25px; height: 10px; background: #1e3a8a; border-radius: 2px;"></span> الفحوصات
+                        </div>
                     </div>
-                    <select class="form-select form-select-sm w-auto" id="chartRangeSelect">
-                        <option value="30">Last 30 days</option>
-                        <option value="7">Last 7 days</option>
-                    </select>
                 </div>
-                <div style="height: 260px;">
+                <div style="height: 280px;">
                     <canvas id="assessmentChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Recent Assessments --}}
-    <div class="col-12 col-xl-4">
-        <div class="card h-100">
+    <!-- Active Doctors / Quick Stats -->
+    <div class="col-12 col-xl-3">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
             <div class="card-body p-4">
-                <h6 class="mb-3 fw-bold">{{ __('dashboard.recent_assessments') }}</h6>
-                <div class="d-flex flex-column gap-3">
-                    @forelse ($recentAssessments as $assessment)
-                        <div class="d-flex align-items-start gap-3">
-                            <div class="avatar bg-primary bg-opacity-10 text-primary" style="font-size:.8rem;">
-                                {{ strtoupper(mb_substr($assessment->user->name ?? 'U', 0, 1, 'UTF-8')) }}
-                            </div>
-                            <div class="flex-grow-1 min-w-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-600 text-truncate" style="font-size:.85rem; font-weight:600; max-width:120px;">
-                                        {{ $assessment->user->name ?? 'Unknown' }}
-                                    </span>
-                                    @php
-                                        $statusClass = match($assessment->status) {
-                                            'completed' => 'success',
-                                            'pending'   => 'warning',
-                                            default     => 'secondary',
-                                        };
-                                        $statusKey = $assessment->status === 'completed' ? 'dashboard.completed' : 'dashboard.pending';
-                                    @endphp
-                                    <span class="badge bg-{{ $statusClass }} bg-opacity-10 text-{{ $statusClass }}" style="font-size:.68rem;">
-                                        {{ __($statusKey) }}
-                                    </span>
-                                </div>
-                                <div class="text-muted text-truncate" style="font-size:.77rem; max-width:180px;">
-                                    {{ $assessment->recommendation ?? __('dashboard.no_recommendation') }}
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-center text-muted py-3" style="font-size:.85rem;">
-                            <i class="fas fa-inbox mb-2 d-block" style="font-size:1.5rem; opacity:.4;"></i>
-                            {{ __('dashboard.no_recent_assessments') }}
-                        </div>
-                    @endforelse
+                <h6 class="fw-bold mb-4 pb-2 border-bottom text-center">حالة النظام</h6>
+                <div class="text-center mb-4">
+                    <div class="fs-1 fw-bold text-primary">{{ $stats['total_users'] ?? 0 }}</div>
+                    <div class="text-muted" style="font-size: .85rem;">المستخدمين النشطين</div>
+                    <div class="progress mt-2 mx-auto" style="height: 6px; width: 80%; border-radius: 10px;">
+                        <div class="progress-bar bg-info" style="width: 75%"></div>
+                    </div>
+                </div>
+                
+                <div class="text-center mb-4 mt-5">
+                    <div class="fs-1 fw-bold text-success">{{ $stats['total_assessments'] ?? 0 }}</div>
+                    <div class="text-muted" style="font-size: .85rem;">إجمالي الفحوصات</div>
+                </div>
+
+                <div class="p-3 mt-5 rounded text-center" style="background: rgba(239,68,68,0.05); border: 1px dashed #ef4444;">
+                    <i class="fas fa-exclamation-triangle text-danger mb-2 fs-4"></i>
+                    <div class="fw-bold text-danger">{{ $stats['pending_assessments'] ?? 0 }} حالة بانتظار المراجعة</div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-{{-- Recent Users Table --}}
-<div class="card">
-    <div class="card-body p-0">
-        <div class="d-flex justify-content-between align-items-center p-4 pb-0 mb-3">
-            <h6 class="mb-0 fw-bold">{{ __('dashboard.recently_registered') }}</h6>
-            <a href="{{ route('users.index') }}" class="btn btn-outline-primary btn-sm">{{ __('dashboard.view_all') }}</a>
+<div class="row g-3">
+    <!-- Recent Assessments Table -->
+    <div class="col-12 col-xl-7">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+            <div class="card-body p-0">
+                <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+                    <h6 class="fw-bold m-0" style="color: #1e3a8a; border-inline-start: 4px solid #1e3a8a; padding-inline-start: 10px;">أحدث الفحوصات المسجلة</h6>
+                    <button class="btn btn-light btn-sm text-muted fw-bold">عرض الكل</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0 text-center" style="font-size: .85rem;">
+                        <thead class="bg-light text-muted">
+                            <tr>
+                                <th>تاريخ التسجيل</th>
+                                <th>الحالة</th>
+                                <th>المنشأة (المريض)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($recentAssessments as $assessment)
+                                <tr>
+                                    <td class="text-muted fw-bold">{{ $assessment->created_at->format('Y-m-d') }}</td>
+                                    <td>
+                                        @if($assessment->status == 'completed')
+                                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">مكتمل</span>
+                                        @else
+                                            <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill">نشط</span>
+                                        @endif
+                                    </td>
+                                    <td class="fw-bold text-primary">
+                                        <i class="fas fa-user-circle me-1 text-muted"></i> {{ $assessment->user->name ?? 'غير معروف' }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="3" class="text-muted py-4">لا توجد فحوصات حديثة</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <div class="table-responsive">
-            <table class="table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th class="ps-4">User</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Joined</th>
-                        <th class="pe-4 text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($recentUsers as $user)
-                        <tr>
-                            <td class="ps-4">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="avatar bg-primary bg-opacity-10 text-primary" style="font-size:.8rem;">
-                                        {{ strtoupper(substr($user->name, 0, 1)) }}
-                                    </div>
-                                    <div>
-                                        <div class="fw-600" style="font-weight:600; font-size:.875rem;">{{ $user->name }}</div>
-                                        <div class="text-muted" style="font-size:.75rem;">ID #{{ $user->id }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td style="font-size:.855rem;">{{ $user->email }}</td>
-                            <td>
-                                @php
-                                    $roleClass = match($user->type ?? 'patient') {
-                                        'admin'   => 'danger',
-                                        'doctor'  => 'info',
-                                        default   => 'success',
-                                    };
-                                @endphp
-                                <span class="badge bg-{{ $roleClass }} bg-opacity-10 text-{{ $roleClass }}" style="font-size:.7rem;">
-                                    {{ ucfirst($user->type ?? 'patient') }}
-                                </span>
-                            </td>
-                            <td style="font-size:.855rem; color:var(--text-muted);">{{ $user->created_at->format('M d, Y') }}</td>
-                            <td class="pe-4 text-end">
-                                <a href="{{ route('users.index') }}" class="btn btn-sm btn-outline-secondary" style="border-radius:6px; font-size:.78rem;">View</a>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+    </div>
+
+    <!-- Recent Users -->
+    <div class="col-12 col-xl-5">
+        <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+            <div class="card-body p-0">
+                <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+                    <h6 class="fw-bold m-0" style="color: #1e3a8a; border-inline-start: 4px solid #1e3a8a; padding-inline-start: 10px;">أخر الحسابات المسجلة</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0 text-center" style="font-size: .85rem;">
+                        <thead class="bg-light text-muted">
+                            <tr>
+                                <th>المبلغ (التقييم)</th>
+                                <th>التاريخ</th>
+                                <th>البند (الاسم)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($recentUsers as $user)
+                                <tr>
+                                    <td class="text-danger fw-bold">{{ $user->type == 'doctor' ? 'طبيب' : 'مريض' }}</td>
+                                    <td class="text-muted fw-bold">{{ $user->created_at->format('H:i:s Y-m-d') }}</td>
+                                    <td class="fw-bold text-dark">{{ $user->name }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -196,74 +200,44 @@
 <script>
     const ctx = document.getElementById('assessmentChart');
     const dailyDiagnoses = @json($dailyDiagnoses);
-
     const labels = Object.keys(dailyDiagnoses);
     const data   = Object.values(dailyDiagnoses);
 
-    let chartInst = null;
-
-    function buildChart(labels, data) {
-        if (chartInst) chartInst.destroy();
-
-        chartInst = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'Assessments',
-                    data,
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                {
+                    type: 'line',
+                    label: 'النمو',
+                    data: data,
+                    borderColor: '#10b981',
+                    borderWidth: 2,
                     tension: 0.4,
-                    fill: true,
-                    backgroundColor: (ctx) => {
-                        const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 260);
-                        g.addColorStop(0, 'rgba(79,70,229,.25)');
-                        g.addColorStop(1, 'rgba(79,70,229,.01)');
-                        return g;
-                    },
-                    borderColor: '#4f46e5',
-                    borderWidth: 2.5,
-                    pointBackgroundColor: '#fff',
-                    pointBorderColor: '#4f46e5',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: 'rgba(15,23,42,.9)',
-                        titleColor: '#f1f5f9',
-                        bodyColor: '#94a3b8',
-                        borderColor: '#1e293b',
-                        borderWidth: 1,
-                        padding: 10,
-                        titleFont: { family: 'Inter', size: 13 },
-                        bodyFont: { family: 'Inter', size: 12 },
-                        displayColors: false,
-                    }
+                    pointBackgroundColor: '#10b981',
+                    fill: false,
+                    yAxisID: 'y'
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(0,0,0,.04)', drawBorder: false },
-                        ticks: { font: { family: 'Inter', size: 11 }, color: '#64748b' }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { font: { family: 'Inter', size: 11 }, color: '#64748b' }
-                    }
-                },
-                interaction: { mode: 'nearest', axis: 'x', intersect: false }
+                {
+                    label: 'الإيرادات (الفحوصات)',
+                    data: data,
+                    backgroundColor: '#1e3a8a',
+                    borderRadius: 4,
+                    barPercentage: 0.3,
+                    yAxisID: 'y'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.04)' } },
+                x: { grid: { display: false } }
             }
-        });
-    }
-
-    buildChart(labels, data);
+        }
+    });
 </script>
 @endpush

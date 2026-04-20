@@ -7,6 +7,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>MediScan AI — Admin Dashboard</title>
     <meta name="description" content="MediScan AI skin disease detection system admin dashboard.">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('PIC/Tab.png') }}">
 
     <!-- Bootstrap -->
     @if(app()->getLocale() == 'ar')
@@ -16,28 +18,28 @@
     @endif
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Tajawal -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary:        #4f46e5;
-            --primary-light:  #818cf8;
-            --primary-dark:   #3730a3;
-            --primary-glow:   rgba(79, 70, 229, 0.15);
-            --success:        #10b981;
-            --warning:        #f59e0b;
-            --danger:         #ef4444;
-            --info:           #06b6d4;
+            --primary:        #005bb5; /* Professional Corporate Medical Blue */
+            --primary-light:  #337ecc;
+            --primary-dark:   #003d7a;
+            --primary-glow:   #eef5fc; /* Very subtle background for active states */
+            --success:        #059669; /* Muted Emerald */
+            --warning:        #d97706; /* Muted Amber */
+            --danger:         #dc2626; /* Muted Red */
+            --info:           #0284c7; /* Standard Cyan/Blue */
             --sidebar-width:  260px;
             --sidebar-bg:     #ffffff;
-            --body-bg:        #f1f5f9;
-            --text-main:      #1e293b;
-            --text-muted:     #64748b;
-            --border-color:   #e2e8f0;
-            --card-shadow:    0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
-            --hover-shadow:   0 8px 24px rgba(0,0,0,.10);
-            --navbar-height:  64px;
+            --body-bg:        #f3f4f6; /* Standard clean gray */
+            --text-main:      #1f2937; /* Gray 800 */
+            --text-muted:     #6b7280; /* Gray 500 */
+            --border-color:   #e5e7eb;
+            --card-shadow:    0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+            --hover-shadow:   0 4px 6px -1px rgba(0,0,0,0.05);
+            --navbar-height:  70px;
         }
 
         [data-bs-theme="dark"] {
@@ -53,11 +55,11 @@
         * { box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', system-ui, sans-serif;
+            font-family: 'Tajawal', system-ui, sans-serif;
             background-color: var(--body-bg);
             color: var(--text-main);
             overflow-x: hidden;
-            font-size: 0.9rem;
+            font-size: 1rem;
         }
 
         /* ─── Sidebar ─────────────────────────────────────────── */
@@ -108,46 +110,51 @@
         }
 
         .sidebar-section-label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: #94a3b8; /* Slate 400 */
             padding: 0 0.5rem;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
         }
 
         .nav-link {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 0.6rem 0.75rem;
+            padding: 0.65rem 1rem;
             color: var(--text-muted);
-            font-weight: 500;
-            border-radius: 8px;
-            margin: 2px 0;
-            transition: all 0.18s ease;
-            border-inline-start: 3px solid transparent;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 6px;
+            margin: 0.15rem 0.75rem;
+            transition: all 0.15s ease-in-out;
             text-decoration: none;
         }
 
         .nav-link .nav-icon {
-            width: 20px;
+            width: 22px;
             text-align: center;
-            font-size: 0.95rem;
+            font-size: 1.1rem;
             flex-shrink: 0;
+            color: var(--text-muted);
+            transition: color 0.15s ease;
         }
 
         .nav-link:hover {
-            color: var(--primary);
-            background: var(--primary-glow);
+            color: var(--text-main);
+            background: var(--body-bg);
         }
 
         .nav-link.active {
+            color: var(--primary-dark);
+            background-color: var(--primary-glow);
+            font-weight: 700;
+            box-shadow: none;
+        }
+        
+        .nav-link.active .nav-icon {
             color: var(--primary);
-            background: var(--primary-glow);
-            border-inline-start-color: var(--primary);
-            font-weight: 600;
         }
 
         .sidebar-footer {
@@ -191,6 +198,40 @@
             flex-direction: column;
             min-height: 100vh;
             transition: margin-inline-start 0.3s ease;
+        }
+
+        /* Desktop Collapse State - Mini Sidebar */
+        @media (min-width: 993px) {
+            body.sidebar-collapsed {
+                --sidebar-width: 90px;
+            }
+            body.sidebar-collapsed .sidebar-brand img {
+                height: 35px !important;
+            }
+            body.sidebar-collapsed .sidebar-section-label {
+                display: none;
+            }
+            body.sidebar-collapsed .nav-link span:not(.nav-icon) {
+                display: none !important;
+            }
+            body.sidebar-collapsed .nav-link {
+                justify-content: center;
+                padding: 0.8rem 0;
+                margin: 0.35rem 0.5rem;
+            }
+            body.sidebar-collapsed .nav-icon {
+                margin: 0;
+                font-size: 1.3rem;
+            }
+            body.sidebar-collapsed .sidebar-user > div {
+                display: none;
+            }
+            body.sidebar-collapsed .sidebar-user {
+                justify-content: center;
+            }
+            body.sidebar-collapsed .sidebar-footer .text-muted {
+                display: none;
+            }
         }
 
         @media (max-width: 992px) {
