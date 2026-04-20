@@ -38,7 +38,7 @@ class AiDiagnosisController extends Controller
         try {
             // 2. Extract Data and Store Image
             $imagePath = $this->storeImage($request->file('image'), 'diagnoses');
-            $fullImagePath = storage_path('app/' . $imagePath);
+            $fullImagePath = Storage::disk('local')->path($imagePath);
             
             $patientData = [
                 'age' => $request->input('patient_age', 'Unknown'),
@@ -90,6 +90,6 @@ class AiDiagnosisController extends Controller
             return response()->json(['success' => false, 'message' => 'Image not found'], 404);
         }
 
-        return response()->file(storage_path('app/' . $path));
+        return response()->file(Storage::disk('local')->path($path));
     }
 }
