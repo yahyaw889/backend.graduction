@@ -12,60 +12,56 @@ class MedicalAiService
      */
     public function diagnoseSkinDisease($imagePath, array $patientData)
     {
-        // 1. Get OpenAI API Key from environment variables
-        $apiKey = config('services.openai.key');
+        // 1. Get Gemini API Key from environment variables
+        $apiKey = config('services.gemini.key');
         
         if (!$apiKey) {
-            throw new \Exception('OpenAI API key is not configured in .env file (OPENAI_API_KEY).');
+            throw new \Exception('Gemini API key is not configured in .env file (GEMINI_API_KEY).');
         }
 
         // 2. Prepare Image
         $imageContent = file_get_contents($imagePath);
         $base64Image = base64_encode($imageContent);
         $mimeType = mime_content_type($imagePath);
-        $dataUri = "data:{$mimeType};base64,{$base64Image}";
 
         // 3. Prepare Prompt
-        $prompt = "You are an expert dermatologist AI assistant. The user has provided an image of their skin and the following clinical data:\n";
+        $prompt = "أنت طبيب ذكاء اصطناعي خبير في الأمراض الجلدية. قام المستخدم بتقديم صورة لجلده والبيانات السريرية التالية:\n";
         $prompt .= json_encode($patientData, JSON_UNESCAPED_UNICODE) . "\n\n";
-        $prompt .= "Please analyze the image and the provided data to detect if there are signs of Monkeypox (Mpox), Smallpox, Chickenpox, or other skin conditions.\n";
-        $prompt .= "Return the result EXACTLY in valid JSON format with the following keys:\n";
-        $prompt .= "- 'diagnosis': string (the most likely condition)\n";
-        $prompt .= "- 'confidence_percentage': integer (0-100)\n";
-        $prompt .= "- 'symptoms_detected': array of strings (what you observe in the image or match from data)\n";
-        $prompt .= "- 'recommendation': string (what the patient should do next)\n";
-        $prompt .= "- 'disclaimer': string (always state that this is an AI analysis and not a final medical diagnosis)\n";
+        $prompt .= "يرجى تحليل الصورة والبيانات المقدمة لاكتشاف ما إذا كانت هناك علامات لمرض جدري القردة (Mpox) أو الجدري أو جدري الماء أو أي أمراض جلدية أخرى.\n";
+        $prompt .= "يجب أن تكون جميع الإجابات (القيم) باللغة العربية الفصحى.\n";
+        $prompt .= "قم بإرجاع النتيجة بتنسيق JSON صحيح تمامًا مع المفاتيح الإنجليزية التالية:\n";
+        $prompt .= "- 'diagnosis': نص (اسم المرض الأكثر احتمالاً باللغة العربية)\n";
+        $prompt .= "- 'confidence_percentage': رقم صحيح (0-100)\n";
+        $prompt .= "- 'symptoms_detected': مصفوفة نصوص (الأعراض التي لاحظتها في الصورة أو المذكورة، باللغة العربية)\n";
+        $prompt .= "- 'recommendation': نص (ما يجب على المريض فعله كخطوة تالية، باللغة العربية)\n";
+        $prompt .= "- 'disclaimer': نص (إخلاء مسؤولية يوضح أن هذا مجرد تحليل ذكاء اصطناعي وليس تشخيصاً طبياً نهائياً، باللغة العربية)\n";
         $prompt .= "Do not include any Markdown formatting like ```json in the output, just the raw JSON object.";
 
-        // 4. Send Request to OpenAI Vision API
-        $response = Http::withToken($apiKey)->withHeaders([
+        // 4. Send Request to Gemini API
+        $response = Http::withHeaders([
             'Content-Type' => 'application/json',
-        ])->post('https://api.openai.com/v1/chat/completions', [
-            'model' => 'gpt-4o-mini',
-            'messages' => [
+        ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={$apiKey}", [
+            'contents' => [
                 [
-                    'role' => 'user',
-                    'content' => [
+                    'parts' => [
+                        ['text' => $prompt],
                         [
-                            'type' => 'text',
-                            'text' => $prompt
-                        ],
-                        [
-                            'type' => 'image_url',
-                            'image_url' => [
-                                'url' => $dataUri
+                            'inline_data' => [
+                                'mime_type' => $mimeType,
+                                'data' => $base64Image
                             ]
                         ]
                     ]
                 ]
             ],
-            'response_format' => ['type' => 'json_object'],
-            'max_tokens' => 1000
+            'generationConfig' => [
+                'responseMimeType' => 'application/json'
+            ]
         ]);
 
         if ($response->successful()) {
             $result = $response->json();
-            $textOutput = $result['choices'][0]['message']['content'] ?? '{}';
+            $textOutput = $result['candidates'][0]['content']['parts'][0]['text'] ?? '{}';
             
             return json_decode(trim($textOutput), true);
         }

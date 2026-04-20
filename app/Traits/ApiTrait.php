@@ -27,6 +27,11 @@ trait ApiTrait
 
         $success = $statusCode >= 200 && $statusCode < 300;
 
+        // Ensure empty data arrays are encoded as empty objects to prevent Flutter type errors
+        if ($success && is_array($data) && empty($data)) {
+            $data = new \stdClass();
+        }
+
         return response()->json([
             'success' => $success,
             'message' => $message,

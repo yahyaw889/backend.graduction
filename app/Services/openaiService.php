@@ -11,29 +11,28 @@ use Illuminate\Support\Facades\Log;
 class OpenAIService
 {
     protected $apiKey;
-    protected $apiUrl;
 
     public function __construct()
     {
-        $this->apiKey = env('OPENAI_API_KEY', 'YOUR_AI_API_KEY');
-        $this->apiUrl = env('OPENAI_API_URL', 'https://api.openai.com/v1/chat/completions');
+        $this->apiKey = env('GEMINI_API_KEY', 'YOUR_AI_API_KEY');
     }
 
     public function askAI($userMessage, $senderId, $receiverId)
     {
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->apiKey,
             'Content-Type' => 'application/json',
-        ])->post($this->apiUrl, [
-            'model' => 'gpt-4o-mini',
-            'messages' => [
-                ['role' => 'user', 'content' => $userMessage]
-            ],
-            'temperature' => 0.7
+        ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={$this->apiKey}", [
+            'contents' => [
+                [
+                    'parts' => [
+                        ['text' => $userMessage]
+                    ]
+                ]
+            ]
         ]);
 
         if ($response->successful()) {
-            $aiReply = $response->json()['choices'][0]['message']['content'] ?? 'لا أفهم';
+            $aiReply = $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? 'لا أفهم';
 
             $aiMessage = Message::create([
                 'sender_id' => $receiverId,
@@ -47,25 +46,27 @@ class OpenAIService
     }
 
     /**
-     * Analyze assessment data using OpenAI
+     * Analyze assessment data using Gemini (formerly OpenAI)
      */
     public function analyze(string $prompt): ?array
     {
         try {
+            $systemPrompt = 'أنت مساعد طبي ذكي. قم بتحليل الأعراض وتقديم تقييم للخطورة والتوصيات.';
+            
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
-            ])->timeout(30)->post($this->apiUrl, [
-                'model' => 'gpt-4o-mini',
-                'messages' => [
-                    ['role' => 'system', 'content' => 'أنت مساعد طبي ذكي. قم بتحليل الأعراض وتقديم تقييم للخطورة والتوصيات.'],
-                    ['role' => 'user', 'content' => $prompt]
-                ],
-                'temperature' => 0.7
+            ])->timeout(30)->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={$this->apiKey}", [
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $systemPrompt . "\n\n" . $prompt]
+                        ]
+                    ]
+                ]
             ]);
 
             if ($response->successful()) {
-                $content = $response->json()['choices'][0]['message']['content'] ?? null;
+                $content = $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? null;
                 
                 if ($content) {
                     // Parse the AI response (you may need to adjust this based on actual response format)
@@ -75,7 +76,7 @@ class OpenAIService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('OpenAI analyze failed: ' . $e->getMessage());
+            Log::error('Gemini analyze failed: ' . $e->getMessage());
             return null;
         }
     }

@@ -47,6 +47,10 @@ return [
         'redirect' => env('FACEBOOK_CALLBACK_URL'),
     ],
 
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+    ],
+
     'openai' => [
         'key' => env('OPENAI_API_KEY'),
     ],
