@@ -19,6 +19,10 @@ class MedicalAiService
             throw new \Exception('Gemini API key is not configured in .env file (GEMINI_API_KEY).');
         }
 
+        if (!config('services.gemini.enabled')) {
+            return ['error' => 'خدمة الذكاء الاصطناعي معطلة حالياً من قبل الإدارة.'];
+        }
+
         // 2. Prepare Image
         $imageContent = file_get_contents($imagePath);
         $base64Image = base64_encode($imageContent);
@@ -63,6 +67,16 @@ class MedicalAiService
             $result = $response->json();
             $textOutput = $result['candidates'][0]['content']['parts'][0]['text'] ?? '{}';
             
+            $usage = $result['usageMetadata'] ?? [];
+            \Illuminate\Support\Facades\DB::table('ai_usages')->insert([
+                'service_name' => 'medical_diagnosis',
+                'prompt_tokens' => $usage['promptTokenCount'] ?? 0,
+                'completion_tokens' => $usage['candidatesTokenCount'] ?? 0,
+                'total_tokens' => $usage['totalTokenCount'] ?? 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
             return json_decode(trim($textOutput), true);
         }
 

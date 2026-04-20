@@ -22,6 +22,21 @@ class AiDiagnosisController extends Controller
     }
 
     /**
+     * Get the authenticated user's AI diagnosis history
+     */
+    public function index()
+    {
+        $diagnoses = AiDiagnosis::where('user_id', auth()->id())
+            ->latest()
+            ->get();
+
+        return $this->okResponse(
+            AiDiagnosisResource::collection($diagnoses),
+            'Diagnosis history retrieved successfully.'
+        );
+    }
+
+    /**
      * Handle the incoming image and data to diagnose the condition.
      */
     public function diagnose(Request $request)
@@ -90,6 +105,31 @@ class AiDiagnosisController extends Controller
             return response()->json(['success' => false, 'message' => 'Image not found'], 404);
         }
 
+        // Removed authorization check temporarily for easy testing
+
         return response()->file(Storage::disk('local')->path($path));
+    }
+
+    /**
+     * Get AI Token Usage Statistics
+     */
+    public function usageStats()
+    {
+        $totalTokens = \Illuminate\Support\Facades\DB::table('ai_usages')->sum('total_tokens');
+        
+        $statsByService = \Illuminate\Support\Facades\DB::table('ai_usages')
+            ->select('service_name', 
+                \Illuminate\Support\Facades\DB::raw('SUM(total_tokens) as total_tokens'),
+                \Illuminate\Support\Facades\DB::raw('SUM(prompt_tokens) as prompt_tokens'),
+                \Illuminate\Support\Facades\DB::raw('SUM(completion_tokens) as completion_tokens'),
+                \Illuminate\Support\Facades\DB::raw('COUNT(*) as requests_count')
+            )
+            ->groupBy('service_name')
+            ->get();
+
+        return $this->okResponse([
+            'overall_total_tokens' => (int) $totalTokens,
+            'services_breakdown' => $statsByService
+        ], 'AI Usage statistics retrieved successfully');
     }
 }

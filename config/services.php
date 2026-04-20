@@ -49,6 +49,7 @@ return [
 
     'gemini' => [
         'key' => env('GEMINI_API_KEY'),
+        'enabled' => env('AI_ENABLED', true),
     ],
 
     'openai' => [

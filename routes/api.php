@@ -17,9 +17,10 @@ Route::post('/login', [AuthSessionController::class, 'login']);
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/auth/google', [GoogleAuthController::class, 'googleAuth']);
 
-// AI Diagnosis Route (Public for testing)
+// AI Diagnosis Routes (Public for testing)
 Route::post('/ai-diagnosis', [AiDiagnosisController::class, 'diagnose']);
 Route::get('/ai-diagnosis/image/{filename}', [AiDiagnosisController::class, 'showImage']);
+Route::get('/ai-usage', [AiDiagnosisController::class, 'usageStats']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -43,6 +44,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
 
+
+    // AI Diagnosis History (Protected)
+    Route::get('/ai-diagnosis', [AiDiagnosisController::class, 'index']);
 
     // Assessments (Medical History)
     

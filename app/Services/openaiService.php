@@ -19,6 +19,9 @@ class OpenAIService
 
     public function askAI($userMessage, $senderId, $receiverId)
     {
+        if (!config('services.gemini.enabled')) {
+            return;
+        }
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
         ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={$this->apiKey}", [
@@ -32,7 +35,18 @@ class OpenAIService
         ]);
 
         if ($response->successful()) {
-            $aiReply = $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? 'لا أفهم';
+            $result = $response->json();
+            $aiReply = $result['candidates'][0]['content']['parts'][0]['text'] ?? 'لا أفهم';
+
+            $usage = $result['usageMetadata'] ?? [];
+            \Illuminate\Support\Facades\DB::table('ai_usages')->insert([
+                'service_name' => 'chat',
+                'prompt_tokens' => $usage['promptTokenCount'] ?? 0,
+                'completion_tokens' => $usage['candidatesTokenCount'] ?? 0,
+                'total_tokens' => $usage['totalTokenCount'] ?? 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
             $aiMessage = Message::create([
                 'sender_id' => $receiverId,
@@ -50,6 +64,9 @@ class OpenAIService
      */
     public function analyze(string $prompt): ?array
     {
+        if (!config('services.gemini.enabled')) {
+            return null;
+        }
         try {
             $systemPrompt = 'أنت مساعد طبي ذكي. قم بتحليل الأعراض وتقديم تقييم للخطورة والتوصيات.';
             
@@ -66,8 +83,19 @@ class OpenAIService
             ]);
 
             if ($response->successful()) {
-                $content = $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                $result = $response->json();
+                $content = $result['candidates'][0]['content']['parts'][0]['text'] ?? null;
                 
+                $usage = $result['usageMetadata'] ?? [];
+                \Illuminate\Support\Facades\DB::table('ai_usages')->insert([
+                    'service_name' => 'assessment',
+                    'prompt_tokens' => $usage['promptTokenCount'] ?? 0,
+                    'completion_tokens' => $usage['candidatesTokenCount'] ?? 0,
+                    'total_tokens' => $usage['totalTokenCount'] ?? 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
                 if ($content) {
                     // Parse the AI response (you may need to adjust this based on actual response format)
                     return $this->parseAIResponse($content);
